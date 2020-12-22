@@ -60,11 +60,11 @@ export let UpdateWithCache = _decorate([customElement('update-with-cache')], fun
                 <p>
                     Sometimes you want to update your UI before you send the
                     update to your API. For this you can use the
-                    <code>setCache(value)</code> method of
-                    <code>asyncStateVar</code>. This will re-render your
+                    <code-small>setCache(value)</code-small> method of
+                    <code-small>asyncStateVar</code-small>. This will re-render your
                     components with the cached value. When you finally want to
                     push the update to your API, you can use
-                    <code>pushCache()</code>:
+                    <code-small>pushCache()</code-small>:
                 </p>
 
                 <div class="demoComponents">

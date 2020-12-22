@@ -58,7 +58,7 @@ export let UpdateUsage = _decorate([customElement('update-usage')], function (_i
                 <h1>LitState <code-small>asyncStateVar</code-small> update demo</h1>
 
                 <p>
-                    The <code-small><a href="#async-state-var">asyncStateVar</a></code-small>
+                    The <a href="#async-state-var"><code-small>asyncStateVar</code-small></a>
                     can also be used to asynchronously <strong>update</strong>
                     data. This is done by defining 2 promises on the
                     <code-small>asyncStateVar</code-small>: one to
