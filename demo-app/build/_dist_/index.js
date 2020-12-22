@@ -30,14 +30,13 @@ function _iterableToArray(iter) { if (typeof Symbol !== "undefined" && Symbol.it
 
 function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
 
-import { customElement, property, html, css } from '../web_modules/lit-element.js';
-import { LitStateElement } from '../web_modules/lit-element-state.js';
+import { customElement, LitElement, property, html, css } from '../web_modules/lit-element.js';
 import '../web_modules/lit-element-demo-app-helpers.js';
 import './basic-usage/index.js';
 import './update-usage/index.js';
 import './update-with-cache/index.js';
-export let LitStateAsyncStateVarDemo = _decorate([customElement('lit-state-async-state-var-demo')], function (_initialize, _LitStateElement) {
-  class LitStateAsyncStateVarDemo extends _LitStateElement {
+export let LitStateAsyncStateVarDemo = _decorate([customElement('lit-state-async-state-var-demo')], function (_initialize, _LitElement) {
+  class LitStateAsyncStateVarDemo extends _LitElement {
     constructor(...args) {
       super(...args);
 
@@ -74,4 +73,4 @@ export let LitStateAsyncStateVarDemo = _decorate([customElement('lit-state-async
       }
     }]
   };
-}, LitStateElement);
+}, LitElement);

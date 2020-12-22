@@ -19,7 +19,7 @@ export class BasicUsage extends DemoPage(LitElement) {
                 <p>
                     To make working with asynchronous data easy, LitState has
                     the <code>asyncStateVar</code>. It's a special kind of
-                    <code><a href="#state-var">stateVar</a></code> which holds a
+                    <code>stateVar</code> which holds a
                     <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise" target="_blank">promise</a>.
                     The promise is automatically executed when the
                     <code>asyncStateVar</code> is being used in a component.
@@ -92,7 +92,7 @@ export class BasicUsage extends DemoPage(LitElement) {
 
                 <p>
                     <code-small>asyncStateVar</code-small> can also handle updates. See
-                    <a href="#async-state-var-update">asyncStateVar update</a>.
+                    <a href="#update">asyncStateVar update</a>.
                 </p>
 
             </div>
@@ -155,13 +155,13 @@ export const demoState = new DemoState();`;
 
     get componentCode() {
 
-        return `import { customElement, html, css } from 'lit-element';
-import { LitStateElement } from 'lit-element-state';
+        return `import { customElement, LitElement, html, css } from 'lit-element';
+import { observeState } from 'lit-element-state';
 import { demoState } from './demo-state.js';
 
 
 @customElement('async-component-1')
-export class AsyncComponent1 extends LitStateElement {
+export class AsyncComponent1 extends observeState(LitElement) {
 
     render() {
 

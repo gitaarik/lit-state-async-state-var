@@ -109,10 +109,7 @@ export let UpdateWithCache = _decorate([customElement('update-with-cache')], fun
 
                 <p>
                     Like this, it's easy to keep your UI synchronized with the
-                    asynchronous data in your app. Also when a re-render
-                    renders different <code-small>stateVar</code-small> or
-                    <code-small>asyncStateVar</code-small> variables, LitState
-                    <a href="#different-vars-on-rerender">observes these new variables for changes too</a>.
+                    asynchronous data in your app.
                 </p>
 
             </div>
@@ -163,13 +160,13 @@ export const demoState = new DemoState();
       kind: "get",
       key: "componentCode",
       value: function componentCode() {
-        return `import { customElement, html, css } from 'lit-element';
-import { LitStateElement } from 'lit-element-state';
+        return `import { customElement, LitElement, html, css } from 'lit-element';
+import { observeState } from 'lit-element-state';
 import { demoState } from './demo-state.js';
 
 
 @customElement('async-update-cache-component-1')
-export class AsyncUpdateCacheComponent1 extends LitStateElement {
+export class AsyncUpdateCacheComponent1 extends observeState(LitElement) {
 
     render() {
 
@@ -178,35 +175,32 @@ export class AsyncUpdateCacheComponent1 extends LitStateElement {
             <h2>&lt;component-1&gt;</h2>
             <h3>Status: \${this.dataStatus}</h3>
 
-            <p>
+            <h3>
+                Value:
                 <input
                     type="text"
                     .value=\${demoState.data.getValue()}
                     @keyup=\${this.handleInputKeyUp}
                     ?disabled=\${demoState.data.isPending()}
                 />
-            </p>
+            </h3>
 
-            <div id="buttons">
+            <button
+                @click=\${() => demoState.data.reload()}
+                ?disabled=\${demoState.data.isPending()}
+            >
+                reload data
+            </button>
 
-                <button
-                    @click=\${() => demoState.data.reload()}
-                    ?disabled=\${demoState.data.isPending()}
-                >
-                    reload data
-                </button>
-
-                <button
-                    @click=\${() => demoState.data.pushCache()}
-                    ?disabled=\${
-                        demoState.data.isPending()
-                        || !demoState.data.isPendingCache()
-                    }
-                >
-                    push cache
-                </button>
-
-            </div>
+            <button
+                @click=\${() => demoState.data.pushCache()}
+                ?disabled=\${
+                    demoState.data.isPending()
+                    || !demoState.data.isPendingCache()
+                }
+            >
+                push cache
+            </button>
 
         \`;
 

@@ -1,8 +1,9 @@
 {
   "name": "lit-state-async-state-var",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "asyncStateVar() for LitElement for easy handling of async data",
   "main": "async-state-var.js",
+  "files": ["async-state-var.js"],
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },

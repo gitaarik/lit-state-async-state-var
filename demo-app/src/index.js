@@ -1,5 +1,4 @@
-import { customElement, property, html, css } from 'lit-element';
-import { LitStateElement } from 'lit-element-state';
+import { customElement, LitElement, property, html, css } from 'lit-element';
 import 'lit-element-demo-app-helpers';
 import './basic-usage/index';
 import './update-usage/index';
@@ -7,7 +6,7 @@ import './update-with-cache/index';
 
 
 @customElement('lit-state-async-state-var-demo')
-export class LitStateAsyncStateVarDemo extends LitStateElement {
+export class LitStateAsyncStateVarDemo extends LitElement {
 
     render() {
         return html`<demo-shell .pages=${this.pages}></demo-shell>`;

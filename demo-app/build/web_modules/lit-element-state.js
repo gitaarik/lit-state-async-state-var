@@ -1,4 +1,4 @@
-import { L as LitElement } from './common/lit-element-7d33ee9a.js';
+import './common/lit-element-7d33ee9a.js';
 
 const observeState = superclass => class extends superclass {
 
@@ -40,9 +40,6 @@ const observeState = superclass => class extends superclass {
     }
 
 };
-
-
-const LitStateElement = observeState(LitElement);
 
 
 class LitState {
@@ -367,4 +364,4 @@ class StateRecorder {
 
 const stateRecorder = new StateRecorder();
 
-export { LitState, LitStateElement, asyncStateVar, observeState };
+export { LitState, asyncStateVar, observeState };

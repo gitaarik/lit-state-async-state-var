@@ -111,7 +111,7 @@ export let UpdateUsage = _decorate([customElement('update-usage')], function (_i
                 <p>
                     In case you want to set the value in the UI before
                     executing the <strong>set</strong> promise, check out
-                    <a href="#async-state-var-update-cache">asyncStateVar update with cache</a>.
+                    <a href="#update-with-cache">update with cache</a>.
                 </p>
 
             </div>
@@ -122,7 +122,8 @@ export let UpdateUsage = _decorate([customElement('update-usage')], function (_i
       kind: "get",
       key: "demoStateCode",
       value: function demoStateCode() {
-        return `import { LitState, asyncStateVar } from 'lit-element-state';
+        return `import { LitState } from 'lit-element-state';
+import { asyncStateVar } from 'lit-state-async-state-var';
 import { currentTime } from './utils.js';
 
 
@@ -202,13 +203,13 @@ export const demoState = new DemoState();`;
       kind: "get",
       key: "componentCode",
       value: function componentCode() {
-        return `import { customElement, html, css } from 'lit-element';
-import { LitStateElement } from 'lit-element-state';
+        return `import { customElement, LitElement, html, css } from 'lit-element';
+import { observeState } from 'lit-element-state';
 import { demoState } from './demo-state.js';
 
 
 @customElement('async-component-1')
-export class AsyncComponent1 extends LitStateElement {
+export class AsyncComponent1 extends observeState(LitElement) {
 
     render() {
 
