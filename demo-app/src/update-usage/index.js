@@ -1,12 +1,12 @@
-import { customElement, property, html, css } from 'lit-element';
-import { DemoElement } from 'lit-state-demo-app-helpers';
-import 'lit-state-demo-app-helpers';
+import { customElement, LitElement, property, html, css } from 'lit-element';
+import { DemoPage } from 'lit-element-demo-app-helpers';
+import 'lit-element-demo-app-helpers';
 import './async-update-component-1';
 import './async-update-component-2';
 
 
 @customElement('update-usage')
-export class UpdateUsage extends DemoElement {
+export class UpdateUsage extends DemoPage(LitElement) {
 
     render() {
 
@@ -28,7 +28,7 @@ export class UpdateUsage extends DemoElement {
                     <code-small>asyncStateVar</code-small>:
                 </p>
 
-                <div id="demoComponents">
+                <div class="demoComponents">
                     <async-update-component-1></async-update-component-1>
                     <async-update-component-2></async-update-component-2>
                 </div>

@@ -1,10 +1,11 @@
-import { customElement, html, css } from 'lit-element';
-import { DemoComponent } from 'lit-state-demo-app-helpers';
+import { customElement, LitElement, html, css } from 'lit-element';
+import { DemoComponent } from 'lit-element-demo-app-helpers';
+import { observeState } from 'lit-element-state';
 import { demoState } from './state';
 
 
 @customElement('async-component-2')
-export class AsyncComponent2 extends DemoComponent {
+export class AsyncComponent2 extends observeState(DemoComponent(LitElement)) {
 
     render() {
 
@@ -12,8 +13,8 @@ export class AsyncComponent2 extends DemoComponent {
 
             <h2>&lt;component-2&gt;</h2>
 
-            <div class="status">Status: ${this.dataStatus}</div>
-            <div class="value">Value: ${demoState.data.getValue()}</div>
+            <h3 class="status">Status: ${this.dataStatus}</h3>
+            <h3 class="value">Value: ${demoState.data.getValue()}</h3>
 
             <div class="buttons">
 

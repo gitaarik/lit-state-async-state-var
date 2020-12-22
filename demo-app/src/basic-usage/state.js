@@ -1,5 +1,5 @@
 import { LitState, asyncStateVar } from 'lit-element-state';
-import { currentTime } from 'lit-state-demo-app-helpers';
+import { currentTime } from 'lit-element-demo-app-helpers';
 
 
 class DemoState extends LitState {

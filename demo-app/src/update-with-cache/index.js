@@ -1,12 +1,12 @@
-import { customElement, property, html, css } from 'lit-element';
-import { DemoElement } from 'lit-state-demo-app-helpers';
-import 'lit-state-demo-app-helpers';
+import { customElement, LitElement, property, html, css } from 'lit-element';
+import { DemoPage } from 'lit-element-demo-app-helpers';
+import 'lit-element-demo-app-helpers';
 import './async-update-cache-component-1';
 import './async-update-cache-component-2';
 
 
 @customElement('update-with-cache')
-export class UpdateWithCache extends DemoElement {
+export class UpdateWithCache extends DemoPage(LitElement) {
 
     render() {
 
@@ -26,7 +26,7 @@ export class UpdateWithCache extends DemoElement {
                     <code>pushCache()</code>:
                 </p>
 
-                <div id="demoComponents">
+                <div class="demoComponents">
                     <async-update-cache-component-1></async-update-cache-component-1>
                     <async-update-cache-component-2></async-update-cache-component-2>
                 </div>

@@ -1,12 +1,12 @@
-import { customElement, property, html, css } from 'lit-element';
-import { DemoElement } from 'lit-state-demo-app-helpers';
-import 'lit-state-demo-app-helpers';
+import { customElement, LitElement, property, html, css } from 'lit-element';
+import { DemoPage } from 'lit-element-demo-app-helpers';
+import 'lit-element-demo-app-helpers';
 import './async-component-1';
 import './async-component-2';
 
 
 @customElement('basic-usage')
-export class BasicUsage extends DemoElement {
+export class BasicUsage extends DemoPage(LitElement) {
 
     render() {
 
@@ -29,7 +29,7 @@ export class BasicUsage extends DemoElement {
                     and it's value:
                 </p>
 
-                <div id="demoComponents">
+                <div class="demoComponents">
                     <async-component-1></async-component-1>
                     <async-component-2></async-component-2>
                 </div>

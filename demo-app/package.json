@@ -9,9 +9,9 @@
   "dependencies": {
     "highlight.js": "^10.4.0",
     "lit-element": "^2.3.1",
-    "lit-element-state": "^1.2.3",
-    "lit-html": "^1.2.1",
-    "lit-state-demo-app-helpers": "0.0.9"
+    "lit-element-demo-app-helpers": "0.0.3",
+    "lit-element-state": "^1.4.0",
+    "lit-html": "^1.2.1"
   },
   "devDependencies": {
     "@babel/plugin-proposal-class-properties": "^7.10.4",

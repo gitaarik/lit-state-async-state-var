@@ -1,19 +1,20 @@
-import { customElement, html, css } from 'lit-element';
-import { DemoComponent } from 'lit-state-demo-app-helpers';
+import { customElement, LitElement, html, css } from 'lit-element';
+import { DemoComponent } from 'lit-element-demo-app-helpers';
+import { observeState } from 'lit-element-state';
 import { demoState } from './state';
 
 
 @customElement('async-update-cache-component-1')
-export class AsyncUpdateCacheComponent1 extends DemoComponent {
+export class AsyncUpdateCacheComponent1 extends observeState(DemoComponent(LitElement)) {
 
     render() {
 
         return html`
 
             <h2>&lt;component-1&gt;</h2>
-            <div class="status">Status: ${this.dataStatus}</div>
+            <h3 class="status">Status: ${this.dataStatus}</h3>
 
-            <div class="value">
+            <h3 class="value">
                 <span>Value:</span>
                 <input
                     type="text"
@@ -21,9 +22,9 @@ export class AsyncUpdateCacheComponent1 extends DemoComponent {
                     @keyup=${this.handleInputKeyUp}
                     ?disabled=${demoState.data.isPending()}
                 />
-            </div>
+            </h3>
 
-            <div id="buttons">
+            <div class="buttons">
 
                 <button
                     @click=${() => demoState.data.reload()}

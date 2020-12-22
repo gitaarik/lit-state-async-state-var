@@ -1,6 +1,6 @@
 import { customElement, property, html, css } from 'lit-element';
 import { LitStateElement } from 'lit-element-state';
-import 'lit-state-demo-app-helpers';
+import 'lit-element-demo-app-helpers';
 import './basic-usage/index';
 import './update-usage/index';
 import './update-with-cache/index';
@@ -10,10 +10,10 @@ import './update-with-cache/index';
 export class LitStateAsyncStateVarDemo extends LitStateElement {
 
     render() {
-        return html`<header-nav .navItems=${this.navItems}></header-nav>`;
+        return html`<demo-shell .pages=${this.pages}></demo-shell>`;
     }
 
-    get navItems() {
+    get pages() {
         return [
             {
                 hash: 'basic-usage',
