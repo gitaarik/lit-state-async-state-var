@@ -82,6 +82,13 @@ export let AsyncUpdateCacheComponent2 = _decorate([customElement('async-update-c
                 </button>
 
                 <button
+                    @click=${() => demoState.data.restoreCache()}
+                    ?disabled=${demoState.data.isPending() || !demoState.data.hasCache() || demoState.data.isPendingCache()}
+                >
+                    restore cache
+                </button>
+
+                <button
                     @click=${() => demoState.data.reload()}
                     ?disabled=${demoState.data.isPending()}
                 >

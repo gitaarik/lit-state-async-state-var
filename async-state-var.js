@@ -21,6 +21,7 @@ class AsyncStateVar extends BaseStateVar {
         this._errorGet = null;
         this._errorSet = null;
         this._value = this._hasOption('initialValue') ? this._getOption('initialValue') : null;
+        this._hasCache = false;
         this._cacheValue = null;
     }
 
@@ -70,6 +71,7 @@ class AsyncStateVar extends BaseStateVar {
             this._value = value;
             this._errorGet = null;
             this._pendingCache = false;
+            this._hasCache = false;
         }).catch(error => {
             this._rejectedGet = true;
             this._errorGet = error;
@@ -148,6 +150,11 @@ class AsyncStateVar extends BaseStateVar {
         return this._value;
     }
 
+    hasCache() {
+        this._recordRead();
+        return this._hasCache;
+    }
+
     setValue(value) {
 
         this._pendingSet = true;
@@ -161,6 +168,7 @@ class AsyncStateVar extends BaseStateVar {
             this._fulfilledSet = true;
             this._value = value;
             this._pendingCache = false;
+            this._hasCache = false;
         }).catch(error => {
             this._rejectedSet = true;
             this._errorSet = error;
@@ -173,19 +181,35 @@ class AsyncStateVar extends BaseStateVar {
     }
 
     setCache(value) {
-        if (value === this._value) return;
+
         this._cacheValue = value;
-        this._pendingCache = true;
+
+        if (this._cacheValue === this._value) {
+            this._hasCache = false;
+            this._pendingCache = false;
+        } else {
+            this._hasCache = true;
+            this._pendingCache = true;
+        }
+
         this._notifyChange();
+
     }
 
     dropCache() {
-        this._cacheValue = null;
+        if (!this._hasCache) return;
         this._pendingCache = false;
         this._notifyChange();
     }
 
+    restoreCache() {
+        if (!this._hasCache) return;
+        this._pendingCache = true;
+        this._notifyChange();
+    }
+
     pushCache() {
+        if (!this._hasCache) return;
         this.setValue(this._cacheValue);
     }
 
