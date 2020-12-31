@@ -189,20 +189,24 @@ export class AsyncUpdateCacheComponent1 extends observeState(LitElement) {
             </h3>
 
             <button
-                @click=\${() => demoState.data.reload()}
-                ?disabled=\${demoState.data.isPending()}
+                @click=\${() => demoState.data.dropCache()}
+                ?disabled=\${demoState.data.isPending() || !demoState.data.isPendingCache()}
             >
-                reload data
+                drop cache
             </button>
 
             <button
                 @click=\${() => demoState.data.pushCache()}
-                ?disabled=\${
-                    demoState.data.isPending()
-                    || !demoState.data.isPendingCache()
-                }
+                ?disabled=\${demoState.data.isPending() || !demoState.data.isPendingCache()}
             >
                 push cache
+            </button>
+
+            <button
+                @click=\${() => demoState.data.reload()}
+                ?disabled=\${demoState.data.isPending()}
+            >
+                reload data
             </button>
 
         \`;
