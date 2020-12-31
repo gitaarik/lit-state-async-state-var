@@ -27,10 +27,10 @@ export class AsyncUpdateCacheComponent1 extends observeState(DemoComponent(LitEl
             <div class="buttons">
 
                 <button
-                    @click=${() => demoState.data.reload()}
-                    ?disabled=${demoState.data.isPending()}
+                    @click=${() => demoState.data.dropCache()}
+                    ?disabled=${demoState.data.isPending() || !demoState.data.isPendingCache()}
                 >
-                    reload data
+                    drop cache
                 </button>
 
                 <button
@@ -38,6 +38,13 @@ export class AsyncUpdateCacheComponent1 extends observeState(DemoComponent(LitEl
                     ?disabled=${demoState.data.isPending() || !demoState.data.isPendingCache()}
                 >
                     push cache
+                </button>
+
+                <button
+                    @click=${() => demoState.data.reload()}
+                    ?disabled=${demoState.data.isPending()}
+                >
+                    reload data
                 </button>
 
             </div>

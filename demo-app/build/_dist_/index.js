@@ -35,6 +35,7 @@ import '../web_modules/lit-element-demo-app-helpers.js';
 import './basic-usage/index.js';
 import './update-usage/index.js';
 import './update-with-cache/index.js';
+import './update-only/index.js';
 export let LitStateAsyncStateVarDemo = _decorate([customElement('lit-state-async-state-var-demo')], function (_initialize, _LitElement) {
   class LitStateAsyncStateVarDemo extends _LitElement {
     constructor(...args) {
@@ -69,6 +70,10 @@ export let LitStateAsyncStateVarDemo = _decorate([customElement('lit-state-async
           hash: 'update-with-cache',
           title: 'Update with cache',
           template: html`<update-with-cache></update-with-cache>`
+        }, {
+          hash: 'update-only',
+          title: 'Update only',
+          template: html`<update-only></update-only>`
         }];
       }
     }]

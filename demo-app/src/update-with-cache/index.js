@@ -23,7 +23,9 @@ export class UpdateWithCache extends DemoPage(LitElement) {
                     <code-small>asyncStateVar</code-small>. This will re-render your
                     components with the cached value. When you finally want to
                     push the update to your API, you can use
-                    <code-small>pushCache()</code-small>:
+                    <code-small>pushCache()</code-small>. Or if you wish to go
+                    back to the original value, use
+                    <code-small>dropCache()</code-small>:
                 </p>
 
                 <div class="demoComponents">

@@ -59,15 +59,15 @@ export let BasicUsage = _decorate([customElement('basic-usage')], function (_ini
 
                 <p>
                     To make working with asynchronous data easy, LitState has
-                    the <code>asyncStateVar</code>. It's a special kind of
-                    <code>stateVar</code> which holds a
+                    the <code-small>asyncStateVar</code-small>. It's a special
+                    kind of <code-small>stateVar</code-small> which holds a
                     <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise" target="_blank">promise</a>.
                     The promise is automatically executed when the
-                    <code>asyncStateVar</code> is being used in a component.
-                    When the promise settles, it will re-render the component.
-                    The component can check the status of the
-                    <code>asyncStateVar</code>, so it can display the status
-                    and it's value:
+                    <code-small>asyncStateVar</code-small> is being used in a
+                    component. When the promise settles, it will re-render the
+                    component. The component can check the status of the
+                    <code-small>asyncStateVar</code-small>, so it can display
+                    the status and it's value:
                 </p>
 
                 <div class="demoComponents">
@@ -96,19 +96,20 @@ export let BasicUsage = _decorate([customElement('basic-usage')], function (_ini
 
                 <p>
                     When the fake API simulates a succesful response, it calls
-                    the promise's <code>resolve()</code> callback, with the
-                    value that needs to be set. When the fake API gets an
-                    error, it calls the promise's <code>reject()</code>
-                    callback, with the error message.
+                    the promise's <code-small>resolve()</code-small> callback,
+                    with the value that needs to be set. When the fake API gets
+                    an error, it calls the promise's
+                    <code-small>reject()</code-small> callback, with the error
+                    message.
                 </p>
 
                 <p>
                     The components use
                     <code-small>demoState.data.getValue()</code-small> to get
                     the current value. This initially returns the (optional)
-                    default value, or <code-small>undefined</code-small> if
-                    there's no default set. When the promise resolves or fails,
-                    the components will be re-rendered, and
+                    initial value, or <code-small>undefined</code-small> if
+                    there's no initial value set. When the promise resolves or
+                    fails, the components will be re-rendered, and
                     <code-small>getValue()</code-small> will return the new
                     value.
                 </p>
@@ -144,16 +145,17 @@ export let BasicUsage = _decorate([customElement('basic-usage')], function (_ini
       kind: "get",
       key: "demoStateCode",
       value: function demoStateCode() {
-        return `import { LitState, asyncStateVar } from 'lit-element-state';
+        return `import { LitState } from 'lit-element-state';
+import { asyncStateVar } from 'lit-state-async-state-var';
 import { currentTime } from './utils.js';
 
 
 class DemoState extends LitState {
 
-    data = asyncStateVar(
-        () => this._getData(),
-        '[default value]' // optional
-    );
+    data = asyncStateVar({
+        get: () => this._getData(),
+        initialValue: '[initial value]' // optional
+    });
 
     _simulateError = false;
 

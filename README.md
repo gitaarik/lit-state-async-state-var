@@ -177,7 +177,8 @@ to see how `asyncStateVar` with updates works.
 Sometimes you want to update your UI before you send the update to your API.
 For this you can use the `setCache(value)` method of `asyncStateVar`. This will
 re-render your components with the cached value. When you finally want to push
-the update to your API, you can use `pushCache()`: 
+the update to your API, you can use `pushCache()`. Or if you wish to go back to
+the original value, use dropCache():
 
 ### Set the cache
 
@@ -191,11 +192,11 @@ myState.myData.setCache('value');
 myState.myData.pushCache();
 ```
 
-The `pushCache()` basically does `setValue(cachedValue)` where the
-`cachedValue` is the value that you set with `setCache()`. If you would do a
-`reload()` or a `setValue()` before you push the cache, the cache will be
-dropped.
+### Drop the cache
 
+```javascript
+myState.myData.dropCache();
+```
 
 Check the [demo app](https://gitaarik.github.io/lit-state-async-state-var/demo-app/build/#update-with-cache)
 to see how `setCache()` works.

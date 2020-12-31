@@ -30,12 +30,13 @@ function _iterableToArray(iter) { if (typeof Symbol !== "undefined" && Symbol.it
 
 function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
 
-import { customElement, LitElement, html, css } from '../../web_modules/lit-element.js';
-import { DemoComponent } from '../../web_modules/lit-element-demo-app-helpers.js';
-import { observeState } from '../../web_modules/lit-element-state.js';
-import { demoState } from './state.js';
-export let AsyncUpdateCacheComponent2 = _decorate([customElement('async-update-cache-component-2')], function (_initialize, _observeState) {
-  class AsyncUpdateCacheComponent2 extends _observeState {
+import { customElement, LitElement, property, html, css } from '../../web_modules/lit-element.js';
+import { DemoPage } from '../../web_modules/lit-element-demo-app-helpers.js';
+import '../../web_modules/lit-element-demo-app-helpers.js';
+import './update-only-component-1.js';
+import './update-only-component-2.js';
+export let UpdateOnly = _decorate([customElement('update-only')], function (_initialize, _DemoPage) {
+  class UpdateOnly extends _DemoPage {
     constructor(...args) {
       super(...args);
 
@@ -45,48 +46,61 @@ export let AsyncUpdateCacheComponent2 = _decorate([customElement('async-update-c
   }
 
   return {
-    F: AsyncUpdateCacheComponent2,
+    F: UpdateOnly,
     d: [{
       kind: "method",
       key: "render",
       value: function render() {
         return html`
 
-            <h2>&lt;component-2&gt;</h2>
-            <h3 class="status">Status: ${this.dataStatus}</h3>
+            <div>
 
-            <h3 class="value">
-                <span>Value:</span>
-                <input
-                    type="text"
-                    .value=${demoState.data.getValue()}
-                    @keyup=${this.handleInputKeyUp}
-                    ?disabled=${demoState.data.isPending()}
-                />
-            </h3>
+                <h1>LitState <code-small>asyncStateVar</code-small> update only demo</h1>
 
-            <div class="buttons">
+                <p>
+                    You might have any data that doesn't need to be
+                    asynchronously loaded, but should be asynchronously
+                    updated. You can make an
+                    <a href="#async-state-var"><code-small>asyncStateVar</code-small></a>
+                    that only has a <code-small>set</code-small> promise, and
+                    no <code-small>get</code-small>. You can use the
+                    <code-small>initialValue</code-small> key to set an initial
+                    value, and <code-small>setCache()</code-small> to set a the
+                    value locally before pushing it to the asynchronous medium.
+                </p>
 
-                <button
-                    @click=${() => demoState.data.dropCache()}
-                    ?disabled=${demoState.data.isPending() || !demoState.data.isPendingCache()}
-                >
-                    drop cache
-                </button>
+                <div class="demoComponents">
+                    <update-only-component-1></update-only-component-1>
+                    <update-only-component-2></update-only-component-2>
+                </div>
 
-                <button
-                    @click=${() => demoState.data.pushCache()}
-                    ?disabled=${demoState.data.isPending() || !demoState.data.isPendingCache()}
-                >
-                    push cache
-                </button>
+                <p>
+                    The <code-small>asyncStateVar</code-small> we use in our
+                    <code-small>demoState</code-small> contains an object that
+                    only has the <code-small>set</code-small> and
+                    <code-small>initialValue</code-small> keys:
+                </p>
 
-                <button
-                    @click=${() => demoState.data.reload()}
-                    ?disabled=${demoState.data.isPending()}
-                >
-                    reload data
-                </button>
+                <p>
+                    <code-big filename='demo-state.js' .code=${this.demoStateCode}></code-big>
+                </p>
+
+                <p>
+                    The component shows the initial value by default, and when
+                    the cache is updated or pushed, it shows the new value. The
+                    component doesn't contain a load button because we don't
+                    load any data asynchronously.
+                </p>
+
+                <p>
+                    <code-big filename='component-1.js' .code=${this.componentCode}></code-big>
+                </p>
+
+                <p>
+                    So whether you need to load or update a value
+                    asynchronously, or both, it is easily done with
+                    <code-small>asyncStateVar</code-small>.
+                </p>
 
             </div>
 
@@ -94,46 +108,94 @@ export let AsyncUpdateCacheComponent2 = _decorate([customElement('async-update-c
       }
     }, {
       kind: "get",
-      key: "dataStatus",
-      value: function dataStatus() {
-        if (demoState.data.isPendingGet()) {
-          return 'loading value...';
-        } else if (demoState.data.isPendingSet()) {
-          return 'updating value...';
-        } else if (demoState.data.isPendingCache()) {
-          return 'cache pending';
-        } else if (demoState.data.isFulfilledGet()) {
-          return 'value loaded';
-        } else if (demoState.data.isFulfilledSet()) {
-          return 'value updated';
-        } else {
-          return 'unknown';
-        }
-      }
-    }, {
-      kind: "method",
-      key: "handleInputKeyUp",
-      value: function handleInputKeyUp(event) {
-        demoState.data.setCache(event.target.value);
+      key: "demoStateCode",
+      value: function demoStateCode() {
+        return `import { LitState } from 'lit-element-state';
+import { asyncStateVar } from 'lit-state-async-state-var';
+
+
+class DemoState extends LitState {
+
+    data = asyncStateVar({
+        set: value => this._setData(value),
+        initialValue: "[initial value]"
+    });
+
+    _setData(value) {
+        return new Promise((resolve, reject) => {
+            setTimeout(() => {
+                resolve(value);
+            }, 3000);
+        });
+    }
+
+}
+
+
+export const demoState = new DemoState();`;
       }
     }, {
       kind: "get",
-      static: true,
-      key: "styles",
-      value: function styles() {
-        return css`
+      key: "componentCode",
+      value: function componentCode() {
+        return `import { customElement, LitElement, html, css } from 'lit-element';
+import { observeState } from 'lit-element-state';
+import { demoState } from './demo-state.js';
 
-            .value {
-                display: flex;
-            }
 
-            .value input {
-                margin-left: 5px;
-                min-width: 0;
-            }
+@customElement('async-update-cache-component-1')
+export class AsyncUpdateCacheComponent1 extends observeState(LitElement) {
 
-        `;
+    render() {
+
+        return html\`
+
+            <h2>&lt;component-1&gt;</h2>
+            <h3 class="status">Status: \${this.dataStatus}</h3>
+
+            <h3 class="value">
+                <span>Value:</span>
+                <input
+                    type="text"
+                    .value=\${demoState.data.getValue()}
+                    @keyup=\${this.handleInputKeyUp}
+                    ?disabled=\${demoState.data.isPending()}
+                />
+            </h3>
+
+            <div class="buttons">
+
+                <button
+                    @click=\${() => demoState.data.pushCache()}
+                    ?disabled=\${demoState.data.isPending() || !demoState.data.isPendingCache()}
+                >
+                    push cache
+                </button>
+
+            </div>
+
+        \`;
+
+    }
+
+    get dataStatus() {
+        if (demoState.data.isPendingSet()) {
+            return 'updating value...'
+        } else if (demoState.data.isPendingCache()) {
+            return 'cache pending';
+        } else if (demoState.data.isFulfilledSet()) {
+            return 'value updated';
+        } else {
+            return 'initial value';
+        }
+    }
+
+    handleInputKeyUp(event) {
+        demoState.data.setCache(event.target.value);
+    }
+
+}`;
       }
     }]
   };
-}, observeState(DemoComponent(LitElement)));
+}, DemoPage(LitElement));

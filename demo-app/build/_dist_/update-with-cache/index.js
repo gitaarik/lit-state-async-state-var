@@ -64,7 +64,9 @@ export let UpdateWithCache = _decorate([customElement('update-with-cache')], fun
                     <code-small>asyncStateVar</code-small>. This will re-render your
                     components with the cached value. When you finally want to
                     push the update to your API, you can use
-                    <code-small>pushCache()</code-small>:
+                    <code-small>pushCache()</code-small>. Or if you wish to go
+                    back to the original value, use
+                    <code-small>dropCache()</code-small>:
                 </p>
 
                 <div class="demoComponents">
@@ -120,7 +122,8 @@ export let UpdateWithCache = _decorate([customElement('update-with-cache')], fun
       kind: "get",
       key: "demoStateCode",
       value: function demoStateCode() {
-        return `import { LitState, asyncStateVar } from 'lit-element-state';
+        return `import { LitState } from 'lit-element-state';
+import { asyncStateVar } from 'lit-state-async-state-var';
 
 
 class DemoState extends LitState {
@@ -128,7 +131,7 @@ class DemoState extends LitState {
     data = asyncStateVar({
         get: () => this._getData(),
         set: value => this._setData(value),
-        default: "[default value]"
+        initialValue: "[initial value]"
     });
 
     _getData() {

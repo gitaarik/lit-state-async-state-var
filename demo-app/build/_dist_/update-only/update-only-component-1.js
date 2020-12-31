@@ -34,8 +34,8 @@ import { customElement, LitElement, html, css } from '../../web_modules/lit-elem
 import { DemoComponent } from '../../web_modules/lit-element-demo-app-helpers.js';
 import { observeState } from '../../web_modules/lit-element-state.js';
 import { demoState } from './state.js';
-export let AsyncUpdateCacheComponent2 = _decorate([customElement('async-update-cache-component-2')], function (_initialize, _observeState) {
-  class AsyncUpdateCacheComponent2 extends _observeState {
+export let UpdateOnlyComponent1 = _decorate([customElement('update-only-component-1')], function (_initialize, _observeState) {
+  class UpdateOnlyComponent1 extends _observeState {
     constructor(...args) {
       super(...args);
 
@@ -45,14 +45,14 @@ export let AsyncUpdateCacheComponent2 = _decorate([customElement('async-update-c
   }
 
   return {
-    F: AsyncUpdateCacheComponent2,
+    F: UpdateOnlyComponent1,
     d: [{
       kind: "method",
       key: "render",
       value: function render() {
         return html`
 
-            <h2>&lt;component-2&gt;</h2>
+            <h2>&lt;component-1&gt;</h2>
             <h3 class="status">Status: ${this.dataStatus}</h3>
 
             <h3 class="value">
@@ -68,24 +68,10 @@ export let AsyncUpdateCacheComponent2 = _decorate([customElement('async-update-c
             <div class="buttons">
 
                 <button
-                    @click=${() => demoState.data.dropCache()}
-                    ?disabled=${demoState.data.isPending() || !demoState.data.isPendingCache()}
-                >
-                    drop cache
-                </button>
-
-                <button
                     @click=${() => demoState.data.pushCache()}
                     ?disabled=${demoState.data.isPending() || !demoState.data.isPendingCache()}
                 >
                     push cache
-                </button>
-
-                <button
-                    @click=${() => demoState.data.reload()}
-                    ?disabled=${demoState.data.isPending()}
-                >
-                    reload data
                 </button>
 
             </div>
@@ -96,18 +82,14 @@ export let AsyncUpdateCacheComponent2 = _decorate([customElement('async-update-c
       kind: "get",
       key: "dataStatus",
       value: function dataStatus() {
-        if (demoState.data.isPendingGet()) {
-          return 'loading value...';
-        } else if (demoState.data.isPendingSet()) {
+        if (demoState.data.isPendingSet()) {
           return 'updating value...';
         } else if (demoState.data.isPendingCache()) {
           return 'cache pending';
-        } else if (demoState.data.isFulfilledGet()) {
-          return 'value loaded';
         } else if (demoState.data.isFulfilledSet()) {
           return 'value updated';
         } else {
-          return 'unknown';
+          return 'initial value';
         }
       }
     }, {

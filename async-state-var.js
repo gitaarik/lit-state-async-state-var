@@ -21,6 +21,7 @@ class AsyncStateVar extends BaseStateVar {
         this._errorGet = null;
         this._errorSet = null;
         this._value = this._hasOption('initialValue') ? this._getOption('initialValue') : null;
+        this._cacheValue = null;
     }
 
     _getOption(key) {
@@ -143,6 +144,7 @@ class AsyncStateVar extends BaseStateVar {
 
     getValue() {
         this._recordRead();
+        if (this._pendingCache) return this._cacheValue;
         return this._value;
     }
 
@@ -172,13 +174,19 @@ class AsyncStateVar extends BaseStateVar {
 
     setCache(value) {
         if (value === this._value) return;
-        this._value = value;
+        this._cacheValue = value;
         this._pendingCache = true;
         this._notifyChange();
     }
 
+    dropCache() {
+        this._cacheValue = null;
+        this._pendingCache = false;
+        this._notifyChange();
+    }
+
     pushCache() {
-        this.setValue(this._value);
+        this.setValue(this._cacheValue);
     }
 
     reload() {
