@@ -1,10 +1,14 @@
-import { LitState, asyncStateVar } from 'lit-element-state';
+import { LitState } from 'lit-element-state';
+import { asyncStateVar } from '@app/async-state-var.js';
 import { currentTime } from 'lit-element-demo-app-helpers';
 
 
 class DemoState extends LitState {
 
-    data = asyncStateVar(() => this._getData(), '[default value]');
+    data = asyncStateVar({
+        get: () => this._getData(),
+        initialValue: '[initial value]'
+    });
 
     _simulateError = false;
 

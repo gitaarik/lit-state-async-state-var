@@ -5,29 +5,17 @@ import { asyncStateVar } from '@app/async-state-var.js';
 class DemoState extends LitState {
 
     data = asyncStateVar({
-        get: () => this._getData(),
         set: value => this._setData(value),
         initialValue: "[initial value]"
     });
 
-    _getData() {
-        return new Promise((resolve, reject) => {
-            setTimeout(() => {
-                resolve(this._fakeApiResponse);
-            }, 3000);
-        });
-    }
-
     _setData(value) {
         return new Promise((resolve, reject) => {
             setTimeout(() => {
-                this._fakeApiResponse = value;
-                resolve(this._fakeApiResponse);
+                resolve(value);
             }, 3000);
         });
     }
-
-    _fakeApiResponse = "Hello world";
 
 }
 

@@ -79,7 +79,8 @@ export class UpdateWithCache extends DemoPage(LitElement) {
 
     get demoStateCode() {
 
-        return `import { LitState, asyncStateVar } from 'lit-element-state';
+        return `import { LitState } from 'lit-element-state';
+import { asyncStateVar } from 'lit-state-async-state-var';
 
 
 class DemoState extends LitState {
@@ -87,7 +88,7 @@ class DemoState extends LitState {
     data = asyncStateVar({
         get: () => this._getData(),
         set: value => this._setData(value),
-        default: "[default value]"
+        initialValue: "[initial value]"
     });
 
     _getData() {

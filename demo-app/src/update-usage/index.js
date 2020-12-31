@@ -91,7 +91,7 @@ class DemoState extends LitState {
     data = asyncStateVar({
         get: () => this._getData(),
         set: value => this._setData(value),
-        default: "[default value]" // optional
+        initialValue: "[initial value]" // optional
     });
 
     _simulateError = false;

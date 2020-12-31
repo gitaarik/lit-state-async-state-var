@@ -3,10 +3,9 @@ import { BaseStateVar } from 'lit-element-state';
 
 class AsyncStateVar extends BaseStateVar {
 
-    constructor(promise, initialValue) {
+    constructor(options) {
         super();
-        this._promise = promise;
-        this._initialValue = initialValue;
+        this._options = options;
         this._init();
     }
 
@@ -21,20 +20,27 @@ class AsyncStateVar extends BaseStateVar {
         this._rejectedSet = false;
         this._errorGet = null;
         this._errorSet = null;
-        this._value = this._getInitialValue();
+        this._value = this._hasOption('initialValue') ? this._getOption('initialValue') : null;
     }
 
-    _getInitialValue() {
-        if (typeof this._promise && 'default' in this._promise) {
-            return this._promise.default;
-        } else {
-            return this._initialValue;
+    _getOption(key) {
+        if (this._hasOption(key)) {
+            return this._options[key];
         }
     }
 
+    _hasOption(key) {
+        return (key in this._options);
+    }
+
     _handleGet() {
-        this.initGet();
+
+        if (this._hasOption('get')) {
+            this.initGet();
+        }
+
         return this;
+
     }
 
     _handleSet(value) {
@@ -45,14 +51,9 @@ class AsyncStateVar extends BaseStateVar {
     }
 
     initGet() {
-
-        if (this._initiatedGet) {
-            return;
-        }
-
+        if (this._initiatedGet) return;
         this._initiatedGet = true;
         this._loadValue();
-
     }
 
     _loadValue() {
@@ -170,6 +171,7 @@ class AsyncStateVar extends BaseStateVar {
     }
 
     setCache(value) {
+        if (value === this._value) return;
         this._value = value;
         this._pendingCache = true;
         this._notifyChange();
@@ -184,38 +186,24 @@ class AsyncStateVar extends BaseStateVar {
     }
 
     get _getPromise() {
-        if (typeof this._promise === 'object') {
-            if ('get' in this._promise) {
-                return this._promise.get;
-            } else {
-                throw (
-                    "asyncStateVar is an object, but has no `get` key. " +
-                    "So can't handle a get on this asyncStateVar."
-                );
-            }
+        if (this._hasOption('get')) {
+            return this._getOption('get');
         } else {
-            return this._promise;
+            throw "asyncStateVar missing `get` option.";
         }
     }
 
     get _setPromise() {
-        if (typeof this._promise === 'object') {
-            if ('set' in this._promise) {
-                return this._promise.set;
-            } else {
-                throw (
-                    "asyncStateVar is an object, but has no `set` key. " +
-                    "So can't handle a set on this asyncStateVar."
-                );
-            }
+        if (this._hasOption('set')) {
+            return this._getOption('set');
         } else {
-            return this._promise;
+            throw "asyncStateVar missing `set` option.";
         }
     }
 
 }
 
 
-export function asyncStateVar(promise, initialValue) {
-    return new AsyncStateVar(promise, initialValue);
+export function asyncStateVar(options) {
+    return new AsyncStateVar(options);
 }

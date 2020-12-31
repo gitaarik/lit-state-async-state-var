@@ -18,7 +18,9 @@ import { asyncStateVar } from 'lit-state-async-state-var';
 
 class MyState extends LitState {
 
-    myAsyncStateVar = asyncStateVar(() => this._getData());
+    myAsyncStateVar = asyncStateVar({
+        get: () => this._getData()
+    });
 
     _getData() {
 
@@ -61,7 +63,9 @@ import { asyncStateVar } from 'lit-state-async-state-var';
 
 class MyState extends LitState {
 
-    myData = asyncStateVar(() => this._getData());
+    myData = asyncStateVar({
+        get: () => this._getData()
+    });
 
     _getData() {
 
@@ -128,7 +132,7 @@ class MyState extends LitState {
     myData = asyncStateVar({
         get: () => this._getData(),
         set: value => this._setData(value),
-        default: 'default value' // optional
+        initialValue: 'initial value' // optional
     });
 
     _getData() {
