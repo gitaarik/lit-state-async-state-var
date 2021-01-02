@@ -36,6 +36,20 @@ export class UpdateWithCache extends DemoPage(LitElement) {
                 </div>
 
                 <p>
+                    <code-small>pushCache()</code-small> essentially calls
+                    <code-small>setValue(cachedValue)</code-small>. However, if
+                    you call <code-small>pushCache()</code-small> when you
+                    haven't set any cache with
+                    <code-small>setCache(value)</code-small>, or when you
+                    dropped the cache with
+                    <code-small>dropCache()</code-small>, then
+                    <code-small>setValue()</code-small> will be called with the
+                    original value. In this way,
+                    <code-small>pushCache()</code-small> will always call your
+                    <code-small>set</code-small> promise.
+                </p>
+
+                <p>
                     Our <code-small>demoState</code-small> doesn't need extra
                     functionality to support the cached value. We just have our
                     fake API for demonstation purposes:
@@ -151,21 +165,21 @@ export class AsyncUpdateCacheComponent1 extends observeState(LitElement) {
 
             <button
                 @click=\${() => demoState.data.dropCache()}
-                ?disabled=\${demoState.data.isPending() || !demoState.data.isPendingCache()}
+                ?disabled=\${demoState.data.isPending()}
             >
                 drop cache
             </button>
 
             <button
                 @click=\${() => demoState.data.pushCache()}
-                ?disabled=\${demoState.data.isPending() || !demoState.data.isPendingCache()}
+                ?disabled=\${demoState.data.isPending()}
             >
                 push cache
             </button>
 
             <button
                 @click=\${() => demoState.data.restoreCache()}
-                ?disabled=\${demoState.data.isPending() || !demoState.data.hasCache() || demoState.data.isPendingCache()}
+                ?disabled=\${demoState.data.isPending()}
             >
                 restore cache
             </button>

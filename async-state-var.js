@@ -209,8 +209,11 @@ class AsyncStateVar extends BaseStateVar {
     }
 
     pushCache() {
-        if (!this._hasCache) return;
-        this.setValue(this._cacheValue);
+        if (this._pendingCache) {
+            this.setValue(this._cacheValue);
+        } else {
+            this.setValue(this._value);
+        }
     }
 
     reload() {

@@ -28,21 +28,21 @@ export class AsyncUpdateCacheComponent2 extends observeState(DemoComponent(LitEl
 
                 <button
                     @click=${() => demoState.data.dropCache()}
-                    ?disabled=${demoState.data.isPending() || !demoState.data.isPendingCache()}
+                    ?disabled=${demoState.data.isPending()}
                 >
                     drop cache
                 </button>
 
                 <button
                     @click=${() => demoState.data.pushCache()}
-                    ?disabled=${demoState.data.isPending() || !demoState.data.isPendingCache()}
+                    ?disabled=${demoState.data.isPending()}
                 >
                     push cache
                 </button>
 
                 <button
                     @click=${() => demoState.data.restoreCache()}
-                    ?disabled=${demoState.data.isPending() || !demoState.data.hasCache() || demoState.data.isPendingCache()}
+                    ?disabled=${demoState.data.isPending()}
                 >
                     restore cache
                 </button>
