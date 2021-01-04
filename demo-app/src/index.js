@@ -4,6 +4,7 @@ import './basic-usage/index';
 import './update-usage/index';
 import './update-delayed-push/index';
 import './update-only/index';
+import './action-usage/index';
 
 
 @customElement('lit-state-async-state-var-demo')
@@ -34,6 +35,11 @@ export class LitStateAsyncStateVarDemo extends LitElement {
                 hash: 'update-only',
                 title: 'Update only',
                 template: html`<update-only></update-only>`
+            },
+            {
+                hash: 'actions',
+                title: 'Actions',
+                template: html`<action-usage></action-usage>`
             }
         ];
     }
