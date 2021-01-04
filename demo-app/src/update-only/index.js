@@ -24,8 +24,8 @@ export class UpdateOnly extends DemoPage(LitElement) {
                     that only has a <code-small>set</code-small> promise, and
                     no <code-small>get</code-small>. You can use the
                     <code-small>initialValue</code-small> key to set an initial
-                    value, and <code-small>setCache()</code-small> to set a the
-                    value locally before pushing it to the asynchronous medium.
+                    value, and <code-small>push()</code-small> to initiate the
+                    <code-small>set</code-small> promise.
                 </p>
 
                 <div class="demoComponents">
@@ -46,9 +46,9 @@ export class UpdateOnly extends DemoPage(LitElement) {
 
                 <p>
                     The component shows the initial value by default, and when
-                    the cache is updated or pushed, it shows the new value. The
-                    component doesn't contain a load button because we don't
-                    load any data asynchronously.
+                    the value is updated and/or pushed, it shows the new value.
+                    The component doesn't contain a load button because we
+                    don't load any data asynchronously.
                 </p>
 
                 <p>
@@ -102,8 +102,8 @@ import { observeState } from 'lit-element-state';
 import { demoState } from './demo-state.js';
 
 
-@customElement('async-update-cache-component-1')
-export class AsyncUpdateCacheComponent1 extends observeState(LitElement) {
+@customElement('update-only-component-1')
+export class UpdateOnlyComponent1 extends observeState(LitElement) {
 
     render() {
 
@@ -116,8 +116,8 @@ export class AsyncUpdateCacheComponent1 extends observeState(LitElement) {
                 <span>Value:</span>
                 <input
                     type="text"
-                    .value=\${demoState.data.getValue()}
-                    @keyup=\${this.handleInputKeyUp}
+                    .value=\${demoState.data}
+                    @keyup=\${event => demoState.data = event.target.value}
                     ?disabled=\${demoState.data.isPending()}
                 />
             </h3>
@@ -125,10 +125,10 @@ export class AsyncUpdateCacheComponent1 extends observeState(LitElement) {
             <div class="buttons">
 
                 <button
-                    @click=\${() => demoState.data.pushCache()}
-                    ?disabled=\${demoState.data.isPending() || !demoState.data.isPendingCache()}
+                    @click=\${() => demoState.data.push()}
+                    ?disabled=\${demoState.data.isPending() || !demoState.data.isPendingChange()}
                 >
-                    push cache
+                    push
                 </button>
 
             </div>
@@ -140,17 +140,13 @@ export class AsyncUpdateCacheComponent1 extends observeState(LitElement) {
     get dataStatus() {
         if (demoState.data.isPendingSet()) {
             return 'updating value...'
-        } else if (demoState.data.isPendingCache()) {
-            return 'cache pending';
+        } else if (demoState.data.isPendingChange()) {
+            return 'change pending';
         } else if (demoState.data.isFulfilledSet()) {
             return 'value updated';
         } else {
             return 'initial value';
         }
-    }
-
-    handleInputKeyUp(event) {
-        demoState.data.setCache(event.target.value);
     }
 
 }`;

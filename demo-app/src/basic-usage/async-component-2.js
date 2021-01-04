@@ -14,7 +14,7 @@ export class AsyncComponent2 extends observeState(DemoComponent(LitElement)) {
             <h2>&lt;component-2&gt;</h2>
 
             <h3 class="status">Status: ${this.dataStatus}</h3>
-            <h3 class="value">Value: ${demoState.data.getValue()}</h3>
+            <h3 class="value">Value: ${demoState.data}</h3>
 
             <div class="buttons">
 

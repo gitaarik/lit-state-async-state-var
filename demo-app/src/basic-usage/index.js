@@ -64,12 +64,12 @@ export class BasicUsage extends DemoPage(LitElement) {
 
                 <p>
                     The components use
-                    <code-small>demoState.data.getValue()</code-small> to get
+                    <code-small>demoState.data</code-small> to get
                     the current value. This initially returns the (optional)
                     initial value, or <code-small>undefined</code-small> if
                     there's no initial value set. When the promise resolves or
                     fails, the components will be re-rendered, and
-                    <code-small>getValue()</code-small> will return the new
+                    <code-small>demoState.data</code-small> will return the new
                     value.
                 </p>
                 
@@ -78,7 +78,10 @@ export class BasicUsage extends DemoPage(LitElement) {
                     <code-small>isPending()</code-small>,
                     <code-small>isRejected()</code-small> and
                     <code-small>isFulfilled()</code-small> to check the status
-                    of the promise:
+                    of the promise. If the promise has been rejected, the error
+                    value passed to the <code-small>reject()</code-small>
+                    callback can be accessed with
+                    <code-small>getError()</code-small>.
                 </p>
 
                 <p>
@@ -172,7 +175,7 @@ export class AsyncComponent1 extends observeState(LitElement) {
             <h2>&lt;component-1&gt;</h2>
 
             <h3>Status: \${this.dataStatus}</h3>
-            <h3>Value: \${demoState.data.getValue()}</h3>
+            <h3>Value: \${demoState.data}</h3>
 
             <button
                 @click=\${() => demoState.data.reload()}

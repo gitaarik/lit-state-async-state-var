@@ -4,8 +4,8 @@ import { observeState } from 'lit-element-state';
 import { demoState } from './state';
 
 
-@customElement('async-update-cache-component-1')
-export class AsyncUpdateCacheComponent1 extends observeState(DemoComponent(LitElement)) {
+@customElement('delayed-push-component-1')
+export class DelayedPushComponent1 extends observeState(DemoComponent(LitElement)) {
 
     render() {
 
@@ -18,8 +18,8 @@ export class AsyncUpdateCacheComponent1 extends observeState(DemoComponent(LitEl
                 <span>Value:</span>
                 <input
                     type="text"
-                    .value=${demoState.data.getValue()}
-                    @keyup=${this.handleInputKeyUp}
+                    .value=${demoState.data}
+                    @keyup=${event => demoState.data = event.target.value}
                     ?disabled=${demoState.data.isPending()}
                 />
             </h3>
@@ -27,31 +27,31 @@ export class AsyncUpdateCacheComponent1 extends observeState(DemoComponent(LitEl
             <div class="buttons">
 
                 <button
-                    @click=${() => demoState.data.dropCache()}
+                    @click=${() => demoState.data.push()}
                     ?disabled=${demoState.data.isPending()}
                 >
-                    drop cache
+                    push
                 </button>
 
                 <button
-                    @click=${() => demoState.data.pushCache()}
+                    @click=${() => demoState.data.reset()}
                     ?disabled=${demoState.data.isPending()}
                 >
-                    push cache
+                    reset
                 </button>
 
                 <button
-                    @click=${() => demoState.data.restoreCache()}
+                    @click=${() => demoState.data.restore()}
                     ?disabled=${demoState.data.isPending()}
                 >
-                    restore cache
+                    restore
                 </button>
 
                 <button
                     @click=${() => demoState.data.reload()}
                     ?disabled=${demoState.data.isPending()}
                 >
-                    reload data
+                    reload
                 </button>
 
             </div>
@@ -65,8 +65,8 @@ export class AsyncUpdateCacheComponent1 extends observeState(DemoComponent(LitEl
             return 'loading value...';
         } else if (demoState.data.isPendingSet()) {
             return 'updating value...'
-        } else if (demoState.data.isPendingCache()) {
-            return 'cache pending';
+        } else if (demoState.data.isPendingChange()) {
+            return 'change pending';
         } else if (demoState.data.isFulfilledGet()) {
             return 'value loaded';
         } else if (demoState.data.isFulfilledSet()) {
@@ -74,10 +74,6 @@ export class AsyncUpdateCacheComponent1 extends observeState(DemoComponent(LitEl
         } else {
             return 'unknown';
         }
-    }
-
-    handleInputKeyUp(event) {
-        demoState.data.setCache(event.target.value);
     }
 
     static get styles() {

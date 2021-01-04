@@ -59,8 +59,8 @@ export let UpdateOnlyComponent1 = _decorate([customElement('update-only-componen
                 <span>Value:</span>
                 <input
                     type="text"
-                    .value=${demoState.data.getValue()}
-                    @keyup=${this.handleInputKeyUp}
+                    .value=${demoState.data}
+                    @keyup=${event => demoState.data = event.target.value}
                     ?disabled=${demoState.data.isPending()}
                 />
             </h3>
@@ -68,10 +68,10 @@ export let UpdateOnlyComponent1 = _decorate([customElement('update-only-componen
             <div class="buttons">
 
                 <button
-                    @click=${() => demoState.data.pushCache()}
-                    ?disabled=${demoState.data.isPending() || !demoState.data.isPendingCache()}
+                    @click=${() => demoState.data.push()}
+                    ?disabled=${demoState.data.isPending() || !demoState.data.isPendingChange()}
                 >
-                    push cache
+                    push
                 </button>
 
             </div>
@@ -84,19 +84,13 @@ export let UpdateOnlyComponent1 = _decorate([customElement('update-only-componen
       value: function dataStatus() {
         if (demoState.data.isPendingSet()) {
           return 'updating value...';
-        } else if (demoState.data.isPendingCache()) {
-          return 'cache pending';
+        } else if (demoState.data.isPendingChange()) {
+          return 'change pending';
         } else if (demoState.data.isFulfilledSet()) {
           return 'value updated';
         } else {
           return 'initial value';
         }
-      }
-    }, {
-      kind: "method",
-      key: "handleInputKeyUp",
-      value: function handleInputKeyUp(event) {
-        demoState.data.setCache(event.target.value);
       }
     }, {
       kind: "get",

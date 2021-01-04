@@ -86,17 +86,31 @@ export let UpdateUsage = _decorate([customElement('update-usage')], function (_i
 
                 <p>
                     The components use
-                    <code-small>demoState.data.setValue(value)</code-small> to
-                    initiate the <strong>set</strong> promise. When it resolves
-                    or fails, the components will be re-rendered. The components
-                    use <code-small>isPendingSet()</code-small>,
+                    <code-small>demoState.data.push(value);</code-small> to
+                    initiate the <strong>set</strong> promise. When it
+                    resolves, the value returned by the
+                    <code-small>resolve()</code-small> callback of the promise
+                    will be set as the new value for the
+                    <code-small>asyncStateVar</code-small>, and your components
+                    will be re-renderd. When the promise fails, no new value
+                    will be set.
+                <p>
+
+                <p>
+                    The components use <code-small>isPendingSet()</code-small>,
                     <code-small>isRejectedSet()</code-small> and
                     <code-small>isFulfilledSet()</code-small> to check the
                     status of the <strong>set</strong> promise. For the
                     <strong>get</strong> promise we use
                     <code-small>isPendingGet()</code-small>,
                     <code-small>isRejectedGet()</code-small> and
-                    <code-small>isFulfilledGet()</code-small>:
+                    <code-small>isFulfilledGet()</code-small>. When any of the
+                    promises fails, the error value passed to the
+                    <code-small>reject()</code-small> callback can be accessed
+                    through <code-small>getErrorSet()</code-small> for the
+                    <strong>set</strong> promise and
+                    <code-small>getErrorGet()</code-small> for the
+                    <strong>get</strong> promise.
                 </p>
 
                 <p>
@@ -107,11 +121,13 @@ export let UpdateUsage = _decorate([customElement('update-usage')], function (_i
                     This makes it easy to deal with asynchronous
                     <strong>gets</strong> and <strong>sets</strong>.
                 </p>
-                
+
                 <p>
-                    In case you want to set the value in the UI before
-                    executing the <strong>set</strong> promise, check out
-                    <a href="#update-with-cache">update with cache</a>.
+                    You can also set the value first and call
+                    <code-small>push()</code-small> later, if you want to
+                    update your UI before you execute the <strong>set</strong>
+                    promise, check out <a href="#update-delayed-push">update
+                    with delayed push</a>.
                 </p>
 
             </div>
@@ -189,9 +205,7 @@ class DemoState extends LitState {
 
     simulateErrorUpdate() {
         this._simulateError = true;
-        this.data.setValue(
-            "This value won't be set, because our fake API will fail."
-        );
+        this.data.push("This value won't be set, because our fake API will fail.");
     }
 
 }
@@ -218,7 +232,7 @@ export class AsyncComponent1 extends observeState(LitElement) {
             <h2>&lt;component-1&gt;</h2>
 
             <h3>Status: \${this.dataStatus}</h3>
-            <h3>Value: \${demoState.data.getValue()}</h3>
+            <h3>Value: \${demoState.data}</h3>
 
             <button
                 @click=\${() => demoState.data.reload()}
@@ -228,9 +242,7 @@ export class AsyncComponent1 extends observeState(LitElement) {
             </button>
 
             <button
-                @click=\${() => demoState.data.setValue(
-                    '<component-1> updated the data!'
-                )}
+                @click=\${() => demoState.data.push('<component-1> updated the data!')}
                 ?disabled=\${demoState.data.isPending()}
             >
                 update data

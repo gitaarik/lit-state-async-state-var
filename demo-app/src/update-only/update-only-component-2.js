@@ -18,19 +18,19 @@ export class UpdateOnlyComponent2 extends observeState(DemoComponent(LitElement)
                 <span>Value:</span>
                 <input
                     type="text"
-                    .value=${demoState.data.getValue()}
-                    @keyup=${this.handleInputKeyUp}
+                    .value=${demoState.data}
+                    @keyup=${event => demoState.data = event.target.value}
                     ?disabled=${demoState.data.isPending()}
                 />
             </h3>
 
-            <div id="buttons">
+            <div class="buttons">
 
                 <button
-                    @click=${() => demoState.data.pushCache()}
-                    ?disabled=${demoState.data.isPending() || !demoState.data.isPendingCache()}
+                    @click=${() => demoState.data.push()}
+                    ?disabled=${demoState.data.isPending() || !demoState.data.isPendingChange()}
                 >
-                    push cache
+                    push
                 </button>
 
             </div>
@@ -42,17 +42,13 @@ export class UpdateOnlyComponent2 extends observeState(DemoComponent(LitElement)
     get dataStatus() {
         if (demoState.data.isPendingSet()) {
             return 'updating value...'
-        } else if (demoState.data.isPendingCache()) {
-            return 'cache pending';
+        } else if (demoState.data.isPendingChange()) {
+            return 'change pending';
         } else if (demoState.data.isFulfilledSet()) {
             return 'value updated';
         } else {
             return 'initial value';
         }
-    }
-
-    handleInputKeyUp(event) {
-        demoState.data.setCache(event.target.value);
     }
 
     static get styles() {

@@ -34,7 +34,7 @@ import { customElement, LitElement, property, html, css } from '../web_modules/l
 import '../web_modules/lit-element-demo-app-helpers.js';
 import './basic-usage/index.js';
 import './update-usage/index.js';
-import './update-with-cache/index.js';
+import './update-delayed-push/index.js';
 import './update-only/index.js';
 export let LitStateAsyncStateVarDemo = _decorate([customElement('lit-state-async-state-var-demo')], function (_initialize, _LitElement) {
   class LitStateAsyncStateVarDemo extends _LitElement {
@@ -67,9 +67,9 @@ export let LitStateAsyncStateVarDemo = _decorate([customElement('lit-state-async
           title: 'Update',
           template: html`<update-usage></update-usage>`
         }, {
-          hash: 'update-with-cache',
-          title: 'Update with cache',
-          template: html`<update-with-cache></update-with-cache>`
+          hash: 'update-delayed-push',
+          title: 'Update with delayed push',
+          template: html`<update-delayed-push></update-delayed-push>`
         }, {
           hash: 'update-only',
           title: 'Update only',

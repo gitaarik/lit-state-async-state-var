@@ -89,8 +89,8 @@ export const myState = new MyState();
 In the component, you can check the status of the promise with the functions
 `isPending()`, `isRejected()` and `isFulfilled()` on the `asyncStateVar`. For
 example: `myState.myData.isPending()`. Based on the status of the promise you
-can then either call `getValue()` or `getError()`. `getError()` returns the
-error in case a promise was rejected:
+can then get the value simply by calling `myState.myData`, or if the promise
+was rejected, get the error with `getError()`.
 
 ```javascript
 import { LitElement } from 'lit-element';
@@ -105,7 +105,7 @@ class MyElement extends observeState(LitElement) {
         } else if (myState.myData.isRejected()) {
             return html`loading data failed with error: ${myState.myData.getError()}`;
         } else {
-            return myState.myData.getValue();
+            return myState.myData;
         }
     }
 
@@ -168,45 +168,63 @@ class MyState extends LitState {
 export const myState = new MyState();
 ```
 
+You can set a new value using the `push()` functions:
+
+```javascript
+myState.myData.push('new value');
+```
+
+This will execute the `_setData()` function. If the promise is succesful and
+the `resolve()` callback is called, the value given to that callback will be
+set as the new value for `myState.myData`. If the promise fails, no new value
+will be set, and the `reject()` callback is called. The error value given to
+the `reject()` callback will be accesible with the `getErrorSet()` method.
+
+**Hint**: When you have both **get** and **set** functions on your
+`asyncStateVar`, the errors for both promises can be separately accessed with
+`getErrorGet()` for the **get** promise, and `getErrorSet()` for the **set**
+promise.
+
 Check the [demo app](https://gitaarik.github.io/lit-state-async-state-var/demo-app/build/#update)
 to see how `asyncStateVar` with updates works.
 
 
-## Update the UI before executing the promise
+## Update with delayed push
 
 Sometimes you want to update your UI before you send the update to your API.
-For this you can use the `setCache(value)` method of `asyncStateVar`. This will
-re-render your components with the cached value. When you finally want to push
-the update to your API, you can use `pushCache()`. Or if you don't want to push
-the cache, but go back to the original value, use `dropCache()`. If you didn't
-mean to drop the cache, you can restore it with `restoreCache()`.
+You can set a new value without executing the **set** promies by just doing
+`myState.myData = 'new value';`. This will re-render your components with the
+new value. When you finally want to push the change to your API, you can use
+`push()` without any arguments. Or if you don't want to push the new value, but
+go back to the original value, use `reset()`. If you didn't mean to reset the
+change, you can restore it with `restore()`.
 
-### Set the cache
-
-```javascript
-myState.myData.setCache('value');
-```
-
-### Push the cache
+### Set a new value
 
 ```javascript
-myState.myData.pushCache();
+myState.myData = 'new value';
 ```
 
-### Drop the cache
+### Push the change
 
 ```javascript
-myState.myData.dropCache();
+myState.myData.push();
 ```
 
-### Restore the dropped cache
+### Reset the unpushed change
 
 ```javascript
-myState.myData.restoreCache();
+myState.myData.reset();
 ```
 
-Check the [demo app](https://gitaarik.github.io/lit-state-async-state-var/demo-app/build/#update-with-cache)
-to see how `setCache()` works.
+### Restore the resetted change
+
+```javascript
+myState.myData.restore();
+```
+
+Check the [demo app](https://gitaarik.github.io/lit-state-async-state-var/demo-app/build/#update-delayed-push)
+to see how delayed updates works.
 
 
 ## Check `asyncStateVar` status
@@ -217,8 +235,8 @@ Use the following methods to check the status of the promise(s):
 isPending()         // 'get' or 'set' is pending
 isPendingGet()      // 'get' is pending
 isPendingSet()      // 'set' is pending
-isPendingCache()    // A cache that has been set with `setCache()` is not yet
-                    // pushed with `pushCache()`
+isPendingChange()   // A new value has been set that has not yet been pushed
+hasChange()         // Wether there is a resetted change that can be restored
 
 isRejected()        // 'get' or 'set' is rejected
 isRejectedGet()     // 'get' is rejected

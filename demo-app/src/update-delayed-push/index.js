@@ -1,12 +1,12 @@
 import { customElement, LitElement, property, html, css } from 'lit-element';
 import { DemoPage } from 'lit-element-demo-app-helpers';
 import 'lit-element-demo-app-helpers';
-import './async-update-cache-component-1';
-import './async-update-cache-component-2';
+import './delayed-push-component-1';
+import './delayed-push-component-2';
 
 
-@customElement('update-with-cache')
-export class UpdateWithCache extends DemoPage(LitElement) {
+@customElement('update-delayed-push')
+export class UpdateDelayedPush extends DemoPage(LitElement) {
 
     render() {
 
@@ -14,45 +14,35 @@ export class UpdateWithCache extends DemoPage(LitElement) {
 
             <div>
 
-                <h1>LitState <code-small>asyncStateVar</code-small> update with cache demo</h1>
+                <h1>LitState <code-small>asyncStateVar</code-small> delayed update</h1>
 
                 <p>
-                    Sometimes you want to update your UI before you send the
-                    update to your API. For this you can use the
-                    <code-small>setCache(value)</code-small> method of
-                    <code-small>asyncStateVar</code-small>. This will re-render your
-                    components with the cached value. When you finally want to
-                    push the update to your asynchronous API, you can use
-                    <code-small>pushCache()</code-small>. Or if you don't want
-                    to push the cache, but go back to the original value, use
-                    <code-small>dropCache()</code-small>. If you didn't mean to
-                    drop the cache, you can restore it with
-                    <code-small>restoreCache()</code-small>:
+                    Sometimes you want to update your UI first before you send
+                    the update to your API. When you set a new value to your
+                    <code-small>asyncStateVar</code-small>, the UI
+                    automatically reflects this new value. Then you can call
+                    the <code-small>push()</code-small> method at a later time,
+                    when you're done with the edits, and you want the
+                    <code-small>set</code-small> promise to be called.
+                </p>
+
+                <p>
+                    If you don't want to push the new value, but go back to the
+                    original value before you changed it, use
+                    <code-small>reset()</code-small>. If you didn't mean to
+                    reset the change, you can restore it with
+                    <code-small>restore()</code-small>:
                 </p>
 
                 <div class="demoComponents">
-                    <async-update-cache-component-1></async-update-cache-component-1>
-                    <async-update-cache-component-2></async-update-cache-component-2>
+                    <delayed-push-component-1></delayed-push-component-1>
+                    <delayed-push-component-2></delayed-push-component-2>
                 </div>
 
                 <p>
-                    <code-small>pushCache()</code-small> essentially calls
-                    <code-small>setValue(cachedValue)</code-small>. However, if
-                    you call <code-small>pushCache()</code-small> when you
-                    haven't set any cache with
-                    <code-small>setCache(value)</code-small>, or when you
-                    dropped the cache with
-                    <code-small>dropCache()</code-small>, then
-                    <code-small>setValue()</code-small> will be called with the
-                    original value. In this way,
-                    <code-small>pushCache()</code-small> will always call your
-                    <code-small>set</code-small> promise.
-                </p>
-
-                <p>
                     Our <code-small>demoState</code-small> doesn't need extra
-                    functionality to support the cached value. We just have our
-                    fake API for demonstation purposes:
+                    functionality. We just have our fake API for demonstation
+                    purposes:
                 </p>
 
                 <p>
@@ -60,8 +50,7 @@ export class UpdateWithCache extends DemoPage(LitElement) {
                 </p>
 
                 <p>
-                    In our components, we call
-                    <code-small>setCache(value)</code-small> on a
+                    In our components, we set the new value on a
                     <code-small>keyup</code-small> event of the
                     <code-small>&lt;input&gt;</code-small> element. Also, we
                     keep the <code-small>&lt;input&gt;</code-small>
@@ -76,8 +65,8 @@ export class UpdateWithCache extends DemoPage(LitElement) {
 
                 <p>
                     We additionally use the
-                    <code-small>isPendingCache()</code-small> method to check
-                    whether there is a cache pending to be pushed:
+                    <code-small>isPendingChange()</code-small> method to check
+                    whether there is a change pending to be pushed:
                 </p>
 
                 <p>
@@ -143,8 +132,8 @@ import { observeState } from 'lit-element-state';
 import { demoState } from './demo-state.js';
 
 
-@customElement('async-update-cache-component-1')
-export class AsyncUpdateCacheComponent1 extends observeState(LitElement) {
+@customElement('async-delayed-push-component-1')
+export class AsyncDelayedPushComponent1 extends observeState(LitElement) {
 
     render() {
 
@@ -157,38 +146,38 @@ export class AsyncUpdateCacheComponent1 extends observeState(LitElement) {
                 Value:
                 <input
                     type="text"
-                    .value=\${demoState.data.getValue()}
-                    @keyup=\${this.handleInputKeyUp}
+                    .value=\${demoState.data}
+                    @keyup=\${demoState.data = event.target.value}
                     ?disabled=\${demoState.data.isPending()}
                 />
             </h3>
 
             <button
-                @click=\${() => demoState.data.dropCache()}
+                @click=\${() => demoState.data.reset()}
                 ?disabled=\${demoState.data.isPending()}
             >
-                drop cache
+                reset
             </button>
 
             <button
-                @click=\${() => demoState.data.pushCache()}
+                @click=\${() => demoState.data.push()}
                 ?disabled=\${demoState.data.isPending()}
             >
-                push cache
+                push
             </button>
 
             <button
-                @click=\${() => demoState.data.restoreCache()}
+                @click=\${() => demoState.data.restore()}
                 ?disabled=\${demoState.data.isPending()}
             >
-                restore cache
+                restore
             </button>
 
             <button
                 @click=\${() => demoState.data.reload()}
                 ?disabled=\${demoState.data.isPending()}
             >
-                reload data
+                reload
             </button>
 
         \`;
@@ -200,8 +189,8 @@ export class AsyncUpdateCacheComponent1 extends observeState(LitElement) {
             return 'loading value...';
         } else if (demoState.data.isPendingSet()) {
             return 'updating value...'
-        } else if (demoState.data.isPendingCache()) {
-            return 'cache pending';
+        } else if (demoState.data.isPendingChange()) {
+            return 'change pending';
         } else if (demoState.data.isFulfilledGet()) {
             return 'value loaded';
         } else if (demoState.data.isFulfilledSet()) {
@@ -209,10 +198,6 @@ export class AsyncUpdateCacheComponent1 extends observeState(LitElement) {
         } else {
             return 'unknown';
         }
-    }
-
-    handleInputKeyUp(event) {
-        demoState.data.setCache(event.target.value);
     }
 
 }`;

@@ -34,8 +34,8 @@ import { customElement, LitElement, html, css } from '../../web_modules/lit-elem
 import { DemoComponent } from '../../web_modules/lit-element-demo-app-helpers.js';
 import { observeState } from '../../web_modules/lit-element-state.js';
 import { demoState } from './state.js';
-export let AsyncUpdateCacheComponent1 = _decorate([customElement('async-update-cache-component-1')], function (_initialize, _observeState) {
-  class AsyncUpdateCacheComponent1 extends _observeState {
+export let DelayedPushComponent1 = _decorate([customElement('delayed-push-component-1')], function (_initialize, _observeState) {
+  class DelayedPushComponent1 extends _observeState {
     constructor(...args) {
       super(...args);
 
@@ -45,7 +45,7 @@ export let AsyncUpdateCacheComponent1 = _decorate([customElement('async-update-c
   }
 
   return {
-    F: AsyncUpdateCacheComponent1,
+    F: DelayedPushComponent1,
     d: [{
       kind: "method",
       key: "render",
@@ -59,8 +59,8 @@ export let AsyncUpdateCacheComponent1 = _decorate([customElement('async-update-c
                 <span>Value:</span>
                 <input
                     type="text"
-                    .value=${demoState.data.getValue()}
-                    @keyup=${this.handleInputKeyUp}
+                    .value=${demoState.data}
+                    @keyup=${event => demoState.data = event.target.value}
                     ?disabled=${demoState.data.isPending()}
                 />
             </h3>
@@ -68,31 +68,31 @@ export let AsyncUpdateCacheComponent1 = _decorate([customElement('async-update-c
             <div class="buttons">
 
                 <button
-                    @click=${() => demoState.data.dropCache()}
+                    @click=${() => demoState.data.push()}
                     ?disabled=${demoState.data.isPending()}
                 >
-                    drop cache
+                    push
                 </button>
 
                 <button
-                    @click=${() => demoState.data.pushCache()}
+                    @click=${() => demoState.data.reset()}
                     ?disabled=${demoState.data.isPending()}
                 >
-                    push cache
+                    reset
                 </button>
 
                 <button
-                    @click=${() => demoState.data.restoreCache()}
+                    @click=${() => demoState.data.restore()}
                     ?disabled=${demoState.data.isPending()}
                 >
-                    restore cache
+                    restore
                 </button>
 
                 <button
                     @click=${() => demoState.data.reload()}
                     ?disabled=${demoState.data.isPending()}
                 >
-                    reload data
+                    reload
                 </button>
 
             </div>
@@ -107,8 +107,8 @@ export let AsyncUpdateCacheComponent1 = _decorate([customElement('async-update-c
           return 'loading value...';
         } else if (demoState.data.isPendingSet()) {
           return 'updating value...';
-        } else if (demoState.data.isPendingCache()) {
-          return 'cache pending';
+        } else if (demoState.data.isPendingChange()) {
+          return 'change pending';
         } else if (demoState.data.isFulfilledGet()) {
           return 'value loaded';
         } else if (demoState.data.isFulfilledSet()) {
@@ -116,12 +116,6 @@ export let AsyncUpdateCacheComponent1 = _decorate([customElement('async-update-c
         } else {
           return 'unknown';
         }
-      }
-    }, {
-      kind: "method",
-      key: "handleInputKeyUp",
-      value: function handleInputKeyUp(event) {
-        demoState.data.setCache(event.target.value);
       }
     }, {
       kind: "get",

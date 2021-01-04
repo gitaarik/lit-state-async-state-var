@@ -30,12 +30,13 @@ function _iterableToArray(iter) { if (typeof Symbol !== "undefined" && Symbol.it
 
 function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
 
-import { customElement, LitElement, html, css } from '../../web_modules/lit-element.js';
-import { DemoComponent } from '../../web_modules/lit-element-demo-app-helpers.js';
-import { observeState } from '../../web_modules/lit-element-state.js';
-import { demoState } from './state.js';
-export let AsyncUpdateCacheComponent2 = _decorate([customElement('async-update-cache-component-2')], function (_initialize, _observeState) {
-  class AsyncUpdateCacheComponent2 extends _observeState {
+import { customElement, LitElement, property, html, css } from '../../web_modules/lit-element.js';
+import { DemoPage } from '../../web_modules/lit-element-demo-app-helpers.js';
+import '../../web_modules/lit-element-demo-app-helpers.js';
+import './delayed-push-component-1.js';
+import './delayed-push-component-2.js';
+export let UpdateDelayedPush = _decorate([customElement('update-delayed-push')], function (_initialize, _DemoPage) {
+  class UpdateDelayedPush extends _DemoPage {
     constructor(...args) {
       super(...args);
 
@@ -45,55 +46,78 @@ export let AsyncUpdateCacheComponent2 = _decorate([customElement('async-update-c
   }
 
   return {
-    F: AsyncUpdateCacheComponent2,
+    F: UpdateDelayedPush,
     d: [{
       kind: "method",
       key: "render",
       value: function render() {
         return html`
 
-            <h2>&lt;component-2&gt;</h2>
-            <h3 class="status">Status: ${this.dataStatus}</h3>
+            <div>
 
-            <h3 class="value">
-                <span>Value:</span>
-                <input
-                    type="text"
-                    .value=${demoState.data.getValue()}
-                    @keyup=${this.handleInputKeyUp}
-                    ?disabled=${demoState.data.isPending()}
-                />
-            </h3>
+                <h1>LitState <code-small>asyncStateVar</code-small> delayed update</h1>
 
-            <div class="buttons">
+                <p>
+                    Sometimes you want to update your UI first before you send
+                    the update to your API. When you set a new value to your
+                    <code-small>asyncStateVar</code-small>, the UI
+                    automatically reflects this new value. Then you can call
+                    the <code-small>push()</code-small> method at a later time,
+                    when you're done with the edits, and you want the
+                    <code-small>set</code-small> promise to be called.
+                </p>
 
-                <button
-                    @click=${() => demoState.data.dropCache()}
-                    ?disabled=${demoState.data.isPending()}
-                >
-                    drop cache
-                </button>
+                <p>
+                    If you don't want to push the new value, but go back to the
+                    original value before you changed it, use
+                    <code-small>reset()</code-small>. If you didn't mean to
+                    reset the change, you can restore it with
+                    <code-small>restore()</code-small>:
+                </p>
 
-                <button
-                    @click=${() => demoState.data.pushCache()}
-                    ?disabled=${demoState.data.isPending()}
-                >
-                    push cache
-                </button>
+                <div class="demoComponents">
+                    <delayed-push-component-1></delayed-push-component-1>
+                    <delayed-push-component-2></delayed-push-component-2>
+                </div>
 
-                <button
-                    @click=${() => demoState.data.restoreCache()}
-                    ?disabled=${demoState.data.isPending()}
-                >
-                    restore cache
-                </button>
+                <p>
+                    Our <code-small>demoState</code-small> doesn't need extra
+                    functionality. We just have our fake API for demonstation
+                    purposes:
+                </p>
 
-                <button
-                    @click=${() => demoState.data.reload()}
-                    ?disabled=${demoState.data.isPending()}
-                >
-                    reload data
-                </button>
+                <p>
+                    <code-big filename='demo-state.js' .code=${this.demoStateCode}></code-big>
+                </p>
+
+                <p>
+                    In our components, we set the new value on a
+                    <code-small>keyup</code-small> event of the
+                    <code-small>&lt;input&gt;</code-small> element. Also, we
+                    keep the <code-small>&lt;input&gt;</code-small>
+                    synchronized by setting the <code-small>.value</code-small>
+                    property. It is important that you use the dot, to make it
+                    a <a href="https://lit-html.polymer-project.org/guide/writing-templates#bind-to-properties" target="_blank">property</a>
+                    instead of an attribute, otherwise lit-html won't be able
+                    to compare the input's current value with the value we're
+                    giving it, causing it to not re-render in certain
+                    situations.
+                </p>
+
+                <p>
+                    We additionally use the
+                    <code-small>isPendingChange()</code-small> method to check
+                    whether there is a change pending to be pushed:
+                </p>
+
+                <p>
+                    <code-big filename='component-1.js' .code=${this.componentCode}></code-big>
+                </p>
+
+                <p>
+                    Like this, it's easy to keep your UI synchronized with the
+                    asynchronous data in your app.
+                </p>
 
             </div>
 
@@ -101,46 +125,124 @@ export let AsyncUpdateCacheComponent2 = _decorate([customElement('async-update-c
       }
     }, {
       kind: "get",
-      key: "dataStatus",
-      value: function dataStatus() {
-        if (demoState.data.isPendingGet()) {
-          return 'loading value...';
-        } else if (demoState.data.isPendingSet()) {
-          return 'updating value...';
-        } else if (demoState.data.isPendingCache()) {
-          return 'cache pending';
-        } else if (demoState.data.isFulfilledGet()) {
-          return 'value loaded';
-        } else if (demoState.data.isFulfilledSet()) {
-          return 'value updated';
-        } else {
-          return 'unknown';
-        }
-      }
-    }, {
-      kind: "method",
-      key: "handleInputKeyUp",
-      value: function handleInputKeyUp(event) {
-        demoState.data.setCache(event.target.value);
+      key: "demoStateCode",
+      value: function demoStateCode() {
+        return `import { LitState } from 'lit-element-state';
+import { asyncStateVar } from 'lit-state-async-state-var';
+
+
+class DemoState extends LitState {
+
+    data = asyncStateVar({
+        get: () => this._getData(),
+        set: value => this._setData(value),
+        initialValue: "[initial value]"
+    });
+
+    _getData() {
+        return new Promise((resolve, reject) => {
+            setTimeout(() => {
+                resolve(this._fakeApiResponse);
+            }, 3000);
+        });
+    }
+
+    _setData(value) {
+        return new Promise((resolve, reject) => {
+            setTimeout(() => {
+                this._fakeApiResponse = value;
+                resolve(this._fakeApiResponse);
+            }, 3000);
+        });
+    }
+
+    _fakeApiResponse = "Hello world";
+
+}
+
+
+export const demoState = new DemoState();
+`;
       }
     }, {
       kind: "get",
-      static: true,
-      key: "styles",
-      value: function styles() {
-        return css`
+      key: "componentCode",
+      value: function componentCode() {
+        return `import { customElement, LitElement, html, css } from 'lit-element';
+import { observeState } from 'lit-element-state';
+import { demoState } from './demo-state.js';
 
-            .value {
-                display: flex;
-            }
 
-            .value input {
-                margin-left: 5px;
-                min-width: 0;
-            }
+@customElement('async-delayed-push-component-1')
+export class AsyncDelayedPushComponent1 extends observeState(LitElement) {
 
-        `;
+    render() {
+
+        return html\`
+
+            <h2>&lt;component-1&gt;</h2>
+            <h3>Status: \${this.dataStatus}</h3>
+
+            <h3>
+                Value:
+                <input
+                    type="text"
+                    .value=\${demoState.data}
+                    @keyup=\${demoState.data = event.target.value}
+                    ?disabled=\${demoState.data.isPending()}
+                />
+            </h3>
+
+            <button
+                @click=\${() => demoState.data.reset()}
+                ?disabled=\${demoState.data.isPending()}
+            >
+                reset
+            </button>
+
+            <button
+                @click=\${() => demoState.data.push()}
+                ?disabled=\${demoState.data.isPending()}
+            >
+                push
+            </button>
+
+            <button
+                @click=\${() => demoState.data.restore()}
+                ?disabled=\${demoState.data.isPending()}
+            >
+                restore
+            </button>
+
+            <button
+                @click=\${() => demoState.data.reload()}
+                ?disabled=\${demoState.data.isPending()}
+            >
+                reload
+            </button>
+
+        \`;
+
+    }
+
+    get dataStatus() {
+        if (demoState.data.isPendingGet()) {
+            return 'loading value...';
+        } else if (demoState.data.isPendingSet()) {
+            return 'updating value...'
+        } else if (demoState.data.isPendingChange()) {
+            return 'change pending';
+        } else if (demoState.data.isFulfilledGet()) {
+            return 'value loaded';
+        } else if (demoState.data.isFulfilledSet()) {
+            return 'value updated';
+        } else {
+            return 'unknown';
+        }
+    }
+
+}`;
       }
     }]
   };
-}, observeState(DemoComponent(LitElement)));
+}, DemoPage(LitElement));

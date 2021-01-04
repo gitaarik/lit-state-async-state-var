@@ -2,7 +2,7 @@ import { customElement, LitElement, property, html, css } from 'lit-element';
 import 'lit-element-demo-app-helpers';
 import './basic-usage/index';
 import './update-usage/index';
-import './update-with-cache/index';
+import './update-delayed-push/index';
 import './update-only/index';
 
 
@@ -26,9 +26,9 @@ export class LitStateAsyncStateVarDemo extends LitElement {
                 template: html`<update-usage></update-usage>`
             },
             {
-                hash: 'update-with-cache',
-                title: 'Update with cache',
-                template: html`<update-with-cache></update-with-cache>`
+                hash: 'update-delayed-push',
+                title: 'Update with delayed push',
+                template: html`<update-delayed-push></update-delayed-push>`
             },
             {
                 hash: 'update-only',
