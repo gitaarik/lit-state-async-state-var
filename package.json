@@ -1,9 +1,14 @@
 {
   "name": "lit-state-async-state-var",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "asyncStateVar() for LitElement for easy handling of async data",
   "main": "async-state-var.js",
-  "files": ["async-state-var.js"],
+  "files": [
+    "async-state-var.js"
+  ],
+  "peerDependencies": {
+    "lit-element-state": "^1.5.1"
+  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },

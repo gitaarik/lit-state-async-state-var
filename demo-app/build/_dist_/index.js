@@ -36,6 +36,7 @@ import './basic-usage/index.js';
 import './update-usage/index.js';
 import './update-delayed-push/index.js';
 import './update-only/index.js';
+import './action-usage/index.js';
 export let LitStateAsyncStateVarDemo = _decorate([customElement('lit-state-async-state-var-demo')], function (_initialize, _LitElement) {
   class LitStateAsyncStateVarDemo extends _LitElement {
     constructor(...args) {
@@ -74,6 +75,10 @@ export let LitStateAsyncStateVarDemo = _decorate([customElement('lit-state-async
           hash: 'update-only',
           title: 'Update only',
           template: html`<update-only></update-only>`
+        }, {
+          hash: 'actions',
+          title: 'Actions',
+          template: html`<action-usage></action-usage>`
         }];
       }
     }]
