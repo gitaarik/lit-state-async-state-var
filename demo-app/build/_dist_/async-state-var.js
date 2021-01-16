@@ -1,6 +1,6 @@
-import { BaseStateVar } from '../web_modules/lit-element-state.js';
+import { StateVar } from '../web_modules/lit-element-state.js';
 
-class AsyncStateVar extends BaseStateVar {
+class AsyncStateVarHandler extends StateVar {
   constructor(options) {
     super();
     this._options = options;
@@ -100,8 +100,11 @@ class AsyncStateVar extends BaseStateVar {
   }
 
   reset() {
-    if (!this._hasChange) return;
     this._pendingChange = false;
+    this._fulfilledGet = false;
+    this._fulfilledSet = false;
+    this._rejectedGet = false;
+    this._rejectedSet = false;
 
     this._notifyChange();
   }
@@ -235,8 +238,4 @@ class AsyncStateVar extends BaseStateVar {
     });
   }
 
-}
-
-export function asyncStateVar(options) {
-  return new AsyncStateVar(options);
 }

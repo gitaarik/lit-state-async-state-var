@@ -1,10 +1,10 @@
 import { customElement, LitElement, property, html, css } from 'lit-element';
 import 'lit-element-demo-app-helpers';
 import './basic-usage/index';
-import './update-usage/index';
-import './update-delayed-push/index';
-import './update-only/index';
-import './action-usage/index';
+// import './update-usage/index';
+// import './update-delayed-push/index';
+// import './update-only/index';
+// import './action-usage/index';
 
 
 @customElement('lit-state-async-state-var-demo')
@@ -21,7 +21,7 @@ export class LitStateAsyncStateVarDemo extends LitElement {
                 title: 'Basic usage',
                 template: html`<basic-usage></basic-usage>`
             },
-            {
+            /*{
                 hash: 'update',
                 title: 'Update',
                 template: html`<update-usage></update-usage>`
@@ -40,7 +40,7 @@ export class LitStateAsyncStateVarDemo extends LitElement {
                 hash: 'actions',
                 title: 'Actions',
                 template: html`<action-usage></action-usage>`
-            }
+            }*/
         ];
     }
 

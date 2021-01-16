@@ -1,11 +1,11 @@
-import { BaseStateVar } from 'lit-element-state';
+import { StateVar, stateVar } from 'lit-element-state';
 
 
-class AsyncStateVar extends BaseStateVar {
+class AsyncStateVarHandler extends StateVar {
 
-    constructor(options) {
-        super();
-        this._options = options;
+    constructor(args) {
+        super(args);
+        this.options = args.options.element.descriptor.value();
         this._init();
     }
 
@@ -22,17 +22,17 @@ class AsyncStateVar extends BaseStateVar {
     }
 
     isPendingGet() {
-        this._recordRead();
+        this.recordRead();
         return this._pendingGet;
     }
 
     isPendingSet() {
-        this._recordRead();
+        this.recordRead();
         return this._pendingSet;
     }
 
     isPendingChange() {
-        this._recordRead();
+        this.recordRead();
         return this._pendingChange;
     }
 
@@ -41,12 +41,12 @@ class AsyncStateVar extends BaseStateVar {
     }
 
     isRejectedGet() {
-        this._recordRead();
+        this.recordRead();
         return this._rejectedGet;
     }
 
     isRejectedSet() {
-        this._recordRead();
+        this.recordRead();
         return this._rejectedSet;
     }
 
@@ -55,12 +55,12 @@ class AsyncStateVar extends BaseStateVar {
     }
 
     getErrorGet() {
-        this._recordRead();
+        this.recordRead();
         return this._errorGet;
     }
 
     getErrorSet() {
-        this._recordRead();
+        this.recordRead();
         return this._errorSet;
     }
 
@@ -69,36 +69,39 @@ class AsyncStateVar extends BaseStateVar {
     }
 
     isFulfilledGet() {
-        this._recordRead();
+        this.recordRead();
         return this._fulfilledGet;
     }
 
     isFulfilledSet() {
-        this._recordRead();
+        this.recordRead();
         return this._fulfilledSet;
     }
 
     getValue() {
-        this._recordRead();
+        this.recordRead();
         if (this._pendingChange) return this._newValue;
-        return this._value;
+        return this.value;
     }
 
     hasChange() {
-        this._recordRead();
+        this.recordRead();
         return this._hasChange;
     }
 
     reset() {
-        if (!this._hasChange) return;
         this._pendingChange = false;
-        this._notifyChange();
+        this._fulfilledGet = false;
+        this._fulfilledSet = false;
+        this._rejectedGet = false;
+        this._rejectedSet = false;
+        this.notifyChange();
     }
 
     restore() {
         if (!this._hasChange) return;
         this._pendingChange = true;
-        this._notifyChange();
+        this.notifyChange();
     }
 
     push(value = undefined) {
@@ -106,7 +109,7 @@ class AsyncStateVar extends BaseStateVar {
             if (this._pendingChange) {
                 this._pushValue(this._newValue);
             } else {
-                this._pushValue(this._value);
+                this._pushValue(this.value);
             }
         } else {
             this._pushValue(value);
@@ -128,24 +131,24 @@ class AsyncStateVar extends BaseStateVar {
         this._rejectedSet = false;
         this._errorGet = null;
         this._errorSet = null;
-        this._value = this._hasOption('initialValue') ? this._getOption('initialValue') : null;
+        this.value = this._hasOption('initialValue') ? this._getOption('initialValue') : null;
         this._hasChange = false;
         this._newValue = null;
     }
 
     _getOption(key) {
         if (this._hasOption(key)) {
-            return this._options[key];
+            return this.options[key];
         } else {
             throw `asyncStateVar missing '${key}' option.`;
         }
     }
 
     _hasOption(key) {
-        return (key in this._options);
+        return (key in this.options);
     }
 
-    _handleGet() {
+    get() {
 
         if (this._hasOption('get')) {
             this._initGet();
@@ -155,11 +158,11 @@ class AsyncStateVar extends BaseStateVar {
 
     }
 
-    _handleSet(value) {
+    set(value) {
 
         this._newValue = value;
 
-        if (this._newValue === this._value) {
+        if (this._newValue === this.value) {
             this._hasChange = false;
             this._pendingChange = false;
         } else {
@@ -167,7 +170,7 @@ class AsyncStateVar extends BaseStateVar {
             this._pendingChange = true;
         }
 
-        this._notifyChange();
+        this.notifyChange();
 
     }
 
@@ -183,11 +186,11 @@ class AsyncStateVar extends BaseStateVar {
         this._rejectedGet = false;
         this._fulfilledGet = false;
         this._fulfilledGet = false;
-        this._notifyChange();
+        this.notifyChange();
 
         this._getOption('get')().then(value => {
             this._fulfilledGet = true;
-            this._value = value;
+            this.value = value;
             this._errorGet = null;
             this._pendingChange = false;
             this._hasChange = false;
@@ -197,7 +200,7 @@ class AsyncStateVar extends BaseStateVar {
         }).finally(() => {
             this._pendingGet = false;
             this._rejectedSet = false;
-            this._notifyChange();
+            this.notifyChange();
         });
 
     }
@@ -209,11 +212,11 @@ class AsyncStateVar extends BaseStateVar {
         this._fulfilledGet = false;
         this._rejectedSet = false;
 
-        this._notifyChange();
+        this.notifyChange();
 
         this._getOption('set')(value).then(value => {
             this._fulfilledSet = true;
-            this._value = value;
+            this.value = value;
             this._pendingChange = false;
             this._hasChange = false;
         }).catch(error => {
@@ -222,7 +225,7 @@ class AsyncStateVar extends BaseStateVar {
         }).finally(() => {
             this._pendingSet = false;
             this._rejectedGet = false;
-            this._notifyChange();
+            this.notifyChange();
         });
 
     }
@@ -230,6 +233,6 @@ class AsyncStateVar extends BaseStateVar {
 }
 
 
-export function asyncStateVar(options) {
-    return new AsyncStateVar(options);
+export function asyncStateVar() {
+    return stateVar({handler: AsyncStateVarHandler});
 }

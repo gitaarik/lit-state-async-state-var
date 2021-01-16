@@ -5,10 +5,20 @@ import { currentTime } from 'lit-element-demo-app-helpers';
 
 class DemoState extends LitState {
 
-    data = asyncStateVar({
-        get: () => this._getData(),
-        initialValue: '[initial value]'
-    });
+    /*@asyncStateVar({
+        get: '_getData',
+        set: '_setData'
+    })
+    data = '[initial value]';*/
+
+    @asyncStateVar()
+    data() {
+        return {
+            initialValue: '[initial value]',
+            get: () => this._getData(),
+            // set: value => this._setData(value)
+        };
+    }
 
     _simulateError = false;
 
