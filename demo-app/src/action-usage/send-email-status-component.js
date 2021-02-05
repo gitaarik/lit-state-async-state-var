@@ -1,16 +1,19 @@
 import { customElement, LitElement, html } from 'lit-element';
-import { DemoComponent } from 'lit-element-demo-app-helpers';
+import { demoComponentStyle } from '@app/demo-component.js';
 import { observeState } from 'lit-element-state';
 import { demoState } from './state';
+import 'lit-docs';
 
 
 @customElement('send-email-status-component')
-export class SendEmailStatusComponent extends observeState(DemoComponent(LitElement)) {
+export class SendEmailStatusComponent extends observeState(demoComponentStyle(LitElement)) {
 
     render() {
         return html`
-            <h2>&lt;send-email-status-component&gt;</h2>
-            <h3>Status: ${this.sendMailStatus}</h3>
+            <showcase-box>
+                <h2>&lt;send-email-status-component&gt;</h2>
+                <h3>Status: ${this.sendMailStatus}</h3>
+            </showcase-box>
         `;
     }
 

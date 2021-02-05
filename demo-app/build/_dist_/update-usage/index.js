@@ -55,18 +55,18 @@ export let UpdateUsage = _decorate([customElement('update-usage')], function (_i
 
             <div>
 
-                <h1>LitState <code-small>asyncStateVar</code-small> update demo</h1>
+                <h1>LitState <code>asyncStateVar</code> update demo</h1>
 
                 <p>
-                    The <a href="#async-state-var"><code-small>asyncStateVar</code-small></a>
+                    The <a href="#async-state-var"><code>asyncStateVar</code></a>
                     can also be used to asynchronously <strong>update</strong>
                     data. This is done by defining 2 promises on the
-                    <code-small>asyncStateVar</code-small>: one to
+                    <code>asyncStateVar</code>: one to
                     <strong>get</strong> the data, and one to
                     <strong>set</strong> the data. When the status of any of
                     the promises changes, it automatically re-renders the
                     components that use the
-                    <code-small>asyncStateVar</code-small>:
+                    <code>asyncStateVar</code>:
                 </p>
 
                 <div class="demoComponents">
@@ -81,40 +81,40 @@ export let UpdateUsage = _decorate([customElement('update-usage')], function (_i
                 </p>
 
                 <p>
-                    <code-big filename='demo-state.js' .code=${this.demoStateCode}></code-big>
+                    <code-block filename='demo-state.js' .code=${this.demoStateCode}></code-block>
                 </p>
 
                 <p>
                     The components use
-                    <code-small>demoState.data.push(value);</code-small> to
+                    <code>demoState.data.push(value);</code> to
                     initiate the <strong>set</strong> promise. When it
                     resolves, the value returned by the
-                    <code-small>resolve()</code-small> callback of the promise
+                    <code>resolve()</code> callback of the promise
                     will be set as the new value for the
-                    <code-small>asyncStateVar</code-small>, and your components
+                    <code>asyncStateVar</code>, and your components
                     will be re-renderd. When the promise fails, no new value
                     will be set.
                 <p>
 
                 <p>
-                    The components use <code-small>isPendingSet()</code-small>,
-                    <code-small>isRejectedSet()</code-small> and
-                    <code-small>isFulfilledSet()</code-small> to check the
+                    The components use <code>isPendingSet()</code>,
+                    <code>isRejectedSet()</code> and
+                    <code>isFulfilledSet()</code> to check the
                     status of the <strong>set</strong> promise. For the
                     <strong>get</strong> promise we use
-                    <code-small>isPendingGet()</code-small>,
-                    <code-small>isRejectedGet()</code-small> and
-                    <code-small>isFulfilledGet()</code-small>. When any of the
+                    <code>isPendingGet()</code>,
+                    <code>isRejectedGet()</code> and
+                    <code>isFulfilledGet()</code>. When any of the
                     promises fails, the error value passed to the
-                    <code-small>reject()</code-small> callback can be accessed
-                    through <code-small>getErrorSet()</code-small> for the
+                    <code>reject()</code> callback can be accessed
+                    through <code>getErrorSet()</code> for the
                     <strong>set</strong> promise and
-                    <code-small>getErrorGet()</code-small> for the
+                    <code>getErrorGet()</code> for the
                     <strong>get</strong> promise.
                 </p>
 
                 <p>
-                    <code-big filename='component-1.js' .code=${this.componentCode}></code-big>
+                    <code-block filename='component-1.js' .code=${this.componentCode}></code-block>
                 </p>
 
                 <p>
@@ -124,7 +124,7 @@ export let UpdateUsage = _decorate([customElement('update-usage')], function (_i
 
                 <p>
                     You can also set the value first and call
-                    <code-small>push()</code-small> later, if you want to
+                    <code>push()</code> later, if you want to
                     update your UI before you execute the <strong>set</strong>
                     promise, check out <a href="#update-delayed-push">update
                     with delayed push</a>.

@@ -55,24 +55,24 @@ export let UpdateDelayedPush = _decorate([customElement('update-delayed-push')],
 
             <div>
 
-                <h1>LitState <code-small>asyncStateVar</code-small> delayed update</h1>
+                <h1>LitState <code>asyncStateVar</code> delayed update</h1>
 
                 <p>
                     Sometimes you want to update your UI first before you send
                     the update to your API. When you set a new value to your
-                    <code-small>asyncStateVar</code-small>, the UI
+                    <code>asyncStateVar</code>, the UI
                     automatically reflects this new value. Then you can call
-                    the <code-small>push()</code-small> method at a later time,
+                    the <code>push()</code> method at a later time,
                     when you're done with the edits, and you want the
-                    <code-small>set</code-small> promise to be called.
+                    <code>set</code> promise to be called.
                 </p>
 
                 <p>
                     If you don't want to push the new value, but go back to the
                     original value before you changed it, use
-                    <code-small>reset()</code-small>. If you didn't mean to
+                    <code>reset()</code>. If you didn't mean to
                     reset the change, you can restore it with
-                    <code-small>restore()</code-small>:
+                    <code>restore()</code>:
                 </p>
 
                 <div class="demoComponents">
@@ -81,21 +81,21 @@ export let UpdateDelayedPush = _decorate([customElement('update-delayed-push')],
                 </div>
 
                 <p>
-                    Our <code-small>demoState</code-small> doesn't need extra
+                    Our <code>demoState</code> doesn't need extra
                     functionality. We just have our fake API for demonstation
                     purposes:
                 </p>
 
                 <p>
-                    <code-big filename='demo-state.js' .code=${this.demoStateCode}></code-big>
+                    <code-block filename='demo-state.js' .code=${this.demoStateCode}></code-block>
                 </p>
 
                 <p>
                     In our components, we set the new value on a
-                    <code-small>keyup</code-small> event of the
-                    <code-small>&lt;input&gt;</code-small> element. Also, we
-                    keep the <code-small>&lt;input&gt;</code-small>
-                    synchronized by setting the <code-small>.value</code-small>
+                    <code>keyup</code> event of the
+                    <code>&lt;input&gt;</code> element. Also, we
+                    keep the <code>&lt;input&gt;</code>
+                    synchronized by setting the <code>.value</code>
                     property. It is important that you use the dot, to make it
                     a <a href="https://lit-html.polymer-project.org/guide/writing-templates#bind-to-properties" target="_blank">property</a>
                     instead of an attribute, otherwise lit-html won't be able
@@ -106,12 +106,12 @@ export let UpdateDelayedPush = _decorate([customElement('update-delayed-push')],
 
                 <p>
                     We additionally use the
-                    <code-small>isPendingChange()</code-small> method to check
+                    <code>isPendingChange()</code> method to check
                     whether there is a change pending to be pushed:
                 </p>
 
                 <p>
-                    <code-big filename='component-1.js' .code=${this.componentCode}></code-big>
+                    <code-block filename='component-1.js' .code=${this.componentCode}></code-block>
                 </p>
 
                 <p>

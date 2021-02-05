@@ -1,12 +1,11 @@
 import { customElement, LitElement, property, html, css } from 'lit-element';
-import { DemoPage } from 'lit-element-demo-app-helpers';
-import 'lit-element-demo-app-helpers';
+import { LitDocsContent } from 'lit-docs';
 import './async-component-1';
 import './async-component-2';
 
 
 @customElement('basic-usage')
-export class BasicUsage extends DemoPage(LitElement) {
+export class BasicUsage extends LitDocsContent(LitElement) {
 
     render() {
 
@@ -14,18 +13,18 @@ export class BasicUsage extends DemoPage(LitElement) {
 
             <div>
 
-                <h1>LitState <code-small>asyncStateVar</code-small> demo</h1>
+                <h1>LitState <code>asyncStateVar</code> demo</h1>
 
                 <p>
                     To make working with asynchronous data easy, LitState has
-                    the <code-small>asyncStateVar</code-small>. It's a special
-                    kind of <code-small>stateVar</code-small> which holds a
+                    the <code>asyncStateVar</code>. It's a special
+                    kind of <code>stateVar</code> which holds a
                     <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise" target="_blank">promise</a>.
                     The promise is automatically executed when the
-                    <code-small>asyncStateVar</code-small> is being used in a
+                    <code>asyncStateVar</code> is being used in a
                     component. When the promise settles, it will re-render the
                     component. The component can check the status of the
-                    <code-small>asyncStateVar</code-small>, so it can display
+                    <code>asyncStateVar</code>, so it can display
                     the status and it's value:
                 </p>
 
@@ -35,57 +34,57 @@ export class BasicUsage extends DemoPage(LitElement) {
                 </div>
 
                 <p>
-                    Our <code-small>demoState</code-small> has a simple fake
+                    Our <code>demoState</code> has a simple fake
                     API for demonstation purposes. The fake API simulates a
                     succesful response (which includes the current time), or an
                     unsuccesful response (with an error message) in case
-                    <code-small>_simulateError</code-small> is
-                    <code-small>true</code-small>.
+                    <code>_simulateError</code> is
+                    <code>true</code>.
                 </p>
                     
                 <p>
-                    On the <code-small>asyncStateVar</code-small> we define the
+                    On the <code>asyncStateVar</code> we define the
                     function that returns the promise for <strong>retrieving
-                    the data</strong>. In this case <code-small>_getData()</code-small>:
+                    the data</strong>. In this case <code>_getData()</code>:
                 </p>
 
                 <p>
-                    <code-big filename='demo-state.js' .code=${this.demoStateCode}></code-big>
+                    <code-block filename='demo-state.js' .code=${this.demoStateCode}></code-block>
                 </p>
 
                 <p>
                     When the fake API simulates a succesful response, it calls
-                    the promise's <code-small>resolve()</code-small> callback,
+                    the promise's <code>resolve()</code> callback,
                     with the value that needs to be set. When the fake API gets
                     an error, it calls the promise's
-                    <code-small>reject()</code-small> callback, with the error
+                    <code>reject()</code> callback, with the error
                     message.
                 </p>
 
                 <p>
                     The components use
-                    <code-small>demoState.data</code-small> to get
+                    <code>demoState.data</code> to get
                     the current value. This initially returns the (optional)
-                    initial value, or <code-small>undefined</code-small> if
+                    initial value, or <code>undefined</code> if
                     there's no initial value set. When the promise resolves or
                     fails, the components will be re-rendered, and
-                    <code-small>demoState.data</code-small> will return the new
+                    <code>demoState.data</code> will return the new
                     value.
                 </p>
                 
                 <p>
                     The components use
-                    <code-small>isPending()</code-small>,
-                    <code-small>isRejected()</code-small> and
-                    <code-small>isFulfilled()</code-small> to check the status
+                    <code>isPending()</code>,
+                    <code>isRejected()</code> and
+                    <code>isFulfilled()</code> to check the status
                     of the promise. If the promise has been rejected, the error
-                    value passed to the <code-small>reject()</code-small>
+                    value passed to the <code>reject()</code>
                     callback can be accessed with
-                    <code-small>getError()</code-small>.
+                    <code>getError()</code>.
                 </p>
 
                 <p>
-                    <code-big filename='component-1.js' .code=${this.componentCode}></code-big>
+                    <code-block filename='component-1.js' .code=${this.componentCode}></code-block>
                 </p>
 
                 <p>
@@ -95,7 +94,7 @@ export class BasicUsage extends DemoPage(LitElement) {
                 </p>
 
                 <p>
-                    <code-small>asyncStateVar</code-small> can also handle updates. See
+                    <code>asyncStateVar</code> can also handle updates. See
                     <a href="#update">asyncStateVar update</a>.
                 </p>
 

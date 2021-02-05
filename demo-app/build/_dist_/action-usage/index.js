@@ -55,13 +55,13 @@ export let ActionUsage = _decorate([customElement('action-usage')], function (_i
 
             <div>
 
-                <h1>Using <code-small>asyncStateVar</code-small> for actions</h1>
+                <h1>Using <code>asyncStateVar</code> for actions</h1>
 
                 <p>
-                    You can also use <code-small>asyncStateVar</code-small> for
+                    You can also use <code>asyncStateVar</code> for
                     asynchronous actions. For example, say you have an API to
                     send emails. You can use
-                    <code-small>asyncStateVar</code-small> to execute the API
+                    <code>asyncStateVar</code> to execute the API
                     call, track the status of the action with the status
                     checking methods, and automatically have your UI
                     synchronized with this status:
@@ -73,36 +73,36 @@ export let ActionUsage = _decorate([customElement('action-usage')], function (_i
                 </div>
 
                 <p>
-                    As you can see in our <code-small>demoState</code-small>,
-                    we use a normal <code-small>asyncStateVar</code-small>. The
+                    As you can see in our <code>demoState</code>,
+                    we use a normal <code>asyncStateVar</code>. The
                     notable thing is that it only has a <strong>set</strong>
                     promise, and doesn't contain any value:
                 </p>
 
                 <p>
-                    <code-big filename='demo-state.js' .code=${this.demoStateCode}></code-big>
+                    <code-block filename='demo-state.js' .code=${this.demoStateCode}></code-block>
                 </p>
 
                 <p>
-                    Our <code-small>&lt;send-email-component&gt;</code-small>
-                    sends the email using the <code-small>push()</code-small>
+                    Our <code>&lt;send-email-component&gt;</code>
+                    sends the email using the <code>push()</code>
                     method:
                 </p>
 
                 <p>
-                    <code-big filename='send-email-component.js' .code=${this.sendEmailComponentCode}></code-big>
+                    <code-block filename='send-email-component.js' .code=${this.sendEmailComponentCode}></code-block>
                 </p>
 
                 <p>
-                    And our <code-small>&lt;send-email-status-component&gt;</code-small>
+                    And our <code>&lt;send-email-status-component&gt;</code>
                     component tracks the status using
-                    <code-small>isPending()</code-small>,
-                    <code-small>isRejected()</code-small> and
-                    <code-small>isFulfilled()</code-small>:
+                    <code>isPending()</code>,
+                    <code>isRejected()</code> and
+                    <code>isFulfilled()</code>:
                 </p>
 
                 <p>
-                    <code-big filename='send-email-status-component.js' .code=${this.sendEmailStatusComponentCode}></code-big>
+                    <code-block filename='send-email-status-component.js' .code=${this.sendEmailStatusComponentCode}></code-block>
                 </p>
 
                 <p>

@@ -1,5 +1,5 @@
 import { customElement, LitElement, property, html, css } from 'lit-element';
-import 'lit-element-demo-app-helpers';
+import 'lit-docs';
 import './basic-usage/index';
 // import './update-usage/index';
 // import './update-delayed-push/index';
@@ -11,7 +11,7 @@ import './basic-usage/index';
 export class LitStateAsyncStateVarDemo extends LitElement {
 
     render() {
-        return html`<demo-shell .pages=${this.pages}></demo-shell>`;
+        return html`<lit-docs-ui docsTitle="LitState asyncStateVar" .pages=${this.pages}></lit-docs-ui>`;
     }
 
     get pages() {

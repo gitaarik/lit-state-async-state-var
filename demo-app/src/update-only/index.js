@@ -1,12 +1,11 @@
 import { customElement, LitElement, property, html, css } from 'lit-element';
-import { DemoPage } from 'lit-element-demo-app-helpers';
-import 'lit-element-demo-app-helpers';
+import { LitDocsContent } from 'lit-docs';
 import './update-only-component-1';
 import './update-only-component-2';
 
 
 @customElement('update-only')
-export class UpdateOnly extends DemoPage(LitElement) {
+export class UpdateOnly extends LitDocsContent(LitElement) {
 
     render() {
 
@@ -14,18 +13,18 @@ export class UpdateOnly extends DemoPage(LitElement) {
 
             <div>
 
-                <h1>LitState <code-small>asyncStateVar</code-small> update only demo</h1>
+                <h1>LitState <code>asyncStateVar</code> update only demo</h1>
 
                 <p>
                     You might have any data that doesn't need to be
                     asynchronously loaded, but should be asynchronously
                     updated. You can make an
-                    <a href="#async-state-var"><code-small>asyncStateVar</code-small></a>
-                    that only has a <code-small>set</code-small> promise, and
-                    no <code-small>get</code-small>. You can use the
-                    <code-small>initialValue</code-small> key to set an initial
-                    value, and <code-small>push()</code-small> to initiate the
-                    <code-small>set</code-small> promise.
+                    <a href="#async-state-var"><code>asyncStateVar</code></a>
+                    that only has a <code>set</code> promise, and
+                    no <code>get</code>. You can use the
+                    <code>initialValue</code> key to set an initial
+                    value, and <code>push()</code> to initiate the
+                    <code>set</code> promise.
                 </p>
 
                 <div class="demoComponents">
@@ -34,14 +33,14 @@ export class UpdateOnly extends DemoPage(LitElement) {
                 </div>
 
                 <p>
-                    The <code-small>asyncStateVar</code-small> we use in our
-                    <code-small>demoState</code-small> contains an object that
-                    only has the <code-small>set</code-small> and
-                    <code-small>initialValue</code-small> keys:
+                    The <code>asyncStateVar</code> we use in our
+                    <code>demoState</code> contains an object that
+                    only has the <code>set</code> and
+                    <code>initialValue</code> keys:
                 </p>
 
                 <p>
-                    <code-big filename='demo-state.js' .code=${this.demoStateCode}></code-big>
+                    <code-block filename='demo-state.js' .code=${this.demoStateCode}></code-block>
                 </p>
 
                 <p>
@@ -52,13 +51,13 @@ export class UpdateOnly extends DemoPage(LitElement) {
                 </p>
 
                 <p>
-                    <code-big filename='component-1.js' .code=${this.componentCode}></code-big>
+                    <code-block filename='component-1.js' .code=${this.componentCode}></code-block>
                 </p>
 
                 <p>
                     So whether you need to load or update a value
                     asynchronously, or both, it is easily done with
-                    <code-small>asyncStateVar</code-small>.
+                    <code>asyncStateVar</code>.
                 </p>
 
             </div>

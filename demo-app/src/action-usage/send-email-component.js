@@ -1,18 +1,21 @@
 import { customElement, LitElement, property, html, css } from 'lit-element';
-import { DemoComponent } from 'lit-element-demo-app-helpers';
+import { demoComponentStyle } from '@app/demo-component.js';
 import { demoState } from './state';
+import 'lit-docs';
 
 
 @customElement('send-email-component')
-export class SendEmailComponent extends DemoComponent(LitElement) {
+export class SendEmailComponent extends demoComponentStyle(LitElement) {
 
     @property() emailText = '';
 
     render() {
         return html`
-            <h2>&lt;send-email-component&gt;</h2>
-            <div><textarea .value=${this.emailText} @keyup=${this.handleEmailTextareaKeyup}></textarea></div>
-            <div><button @click=${this.handleSendEmailButtonClick}>Send mail</button></div>
+            <showcase-box>
+                <h2>&lt;send-email-component&gt;</h2>
+                <div><textarea .value=${this.emailText} @keyup=${this.handleEmailTextareaKeyup}></textarea></div>
+                <div><button @click=${this.handleSendEmailButtonClick}>Send mail</button></div>
+            </showcase-box>
         `;
     }
 

@@ -3291,7 +3291,7 @@ class CodeBig extends LitElement {
 
 }
 
-customElements.define('code-big', CodeBig);
+customElements.define('code-block', CodeBig);
 
 class CodeSmall extends LitElement {
 
@@ -3315,7 +3315,7 @@ class CodeSmall extends LitElement {
 
 }
 
-customElements.define('code-small', CodeSmall);
+customElements.define('code', CodeSmall);
 
 class DemoShell extends LitElement {
 

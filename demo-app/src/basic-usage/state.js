@@ -1,6 +1,6 @@
 import { LitState } from 'lit-element-state';
 import { asyncStateVar } from '@app/async-state-var.js';
-import { currentTime } from 'lit-element-demo-app-helpers';
+import { currentTime } from '@app/current-time.js';
 
 
 class DemoState extends LitState {
