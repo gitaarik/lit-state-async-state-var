@@ -5,8 +5,8 @@ import { demoState } from './state';
 import 'lit-docs';
 
 
-@customElement('async-component-1')
-export class AsyncComponent1 extends observeState(demoComponentStyle(LitElement)) {
+@customElement('basic-component-1')
+export class BasicComponent1 extends observeState(demoComponentStyle(LitElement)) {
 
     render() {
 
@@ -25,14 +25,7 @@ export class AsyncComponent1 extends observeState(demoComponentStyle(LitElement)
                         @click=${() => demoState.data.reload()}
                         ?disabled=${demoState.data.isPending()}
                     >
-                        reload data
-                    </button>
-
-                    <button
-                        @click=${() => demoState.simulateErrorReload()}
-                        ?disabled=${demoState.data.isPending()}
-                    >
-                        simulate error
+                        reload
                     </button>
 
                 </div>
@@ -46,8 +39,6 @@ export class AsyncComponent1 extends observeState(demoComponentStyle(LitElement)
     get dataStatus() {
         if (demoState.data.isPending()) {
             return 'loading value...';
-        } else if (demoState.data.isRejected()) {
-            return 'loading failed with error: "' + demoState.data.getError() + '"';
         } else if (demoState.data.isFulfilled()) {
             return 'value loaded';
         } else {

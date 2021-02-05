@@ -13,12 +13,30 @@ class DemoState extends LitState {
         };
     }
 
+    _induceReject = false;
+
     _getData() {
+
         return new Promise((resolve, reject) => {
+
             setTimeout(() => {
-                resolve("Hello world (" + currentTime() + ")");
+
+                if (this._induceReject) {
+                    reject("simulated reject");
+                    this._induceReject = false;
+                } else {
+                    resolve("Hello world (" + currentTime() + ")");
+                }
+
             }, 3000);
+
         });
+
+    }
+
+    induceReject() {
+        this._induceReject = true;
+        this.data.reload();
     }
 
 }

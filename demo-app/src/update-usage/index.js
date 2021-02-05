@@ -13,7 +13,7 @@ export class UpdateUsage extends LitDocsContent(LitElement) {
 
             <div>
 
-                <h1>LitState <code>asyncStateVar</code> update demo</h1>
+                <h1>Update promise</h1>
 
                 <p>
                     The <a href="#async-state-var"><code>asyncStateVar</code></a>

@@ -13,7 +13,7 @@ export class UpdateDelayedPush extends LitDocsContent(LitElement) {
 
             <div>
 
-                <h1>LitState <code>asyncStateVar</code> delayed update</h1>
+                <h1>Delayed update</h1>
 
                 <p>
                     Sometimes you want to update your UI first before you send

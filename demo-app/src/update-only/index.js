@@ -13,7 +13,7 @@ export class UpdateOnly extends LitDocsContent(LitElement) {
 
             <div>
 
-                <h1>LitState <code>asyncStateVar</code> update only demo</h1>
+                <h1>Update only</h1>
 
                 <p>
                     You might have any data that doesn't need to be
