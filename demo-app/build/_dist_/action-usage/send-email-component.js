@@ -31,10 +31,11 @@ function _iterableToArray(iter) { if (typeof Symbol !== "undefined" && Symbol.it
 function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
 
 import { customElement, LitElement, property, html, css } from '../../web_modules/lit-element.js';
-import { DemoComponent } from '../../web_modules/lit-element-demo-app-helpers.js';
+import { demoComponentStyle } from '../demo-component.js';
 import { demoState } from './state.js';
-export let SendEmailComponent = _decorate([customElement('send-email-component')], function (_initialize, _DemoComponent) {
-  class SendEmailComponent extends _DemoComponent {
+import '../../web_modules/lit-docs.js';
+export let SendEmailComponent = _decorate([customElement('send-email-component')], function (_initialize, _demoComponentStyle) {
+  class SendEmailComponent extends _demoComponentStyle {
     constructor(...args) {
       super(...args);
 
@@ -59,9 +60,11 @@ export let SendEmailComponent = _decorate([customElement('send-email-component')
       key: "render",
       value: function render() {
         return html`
-            <h2>&lt;send-email-component&gt;</h2>
-            <div><textarea .value=${this.emailText} @keyup=${this.handleEmailTextareaKeyup}></textarea></div>
-            <div><button @click=${this.handleSendEmailButtonClick}>Send mail</button></div>
+            <showcase-box>
+                <h2>&lt;send-email-component&gt;</h2>
+                <div><textarea .value=${this.emailText} @keyup=${this.handleEmailTextareaKeyup}></textarea></div>
+                <div><button @click=${this.handleSendEmailButtonClick}>Send mail</button></div>
+            </showcase-box>
         `;
       }
     }, {
@@ -92,4 +95,4 @@ export let SendEmailComponent = _decorate([customElement('send-email-component')
       }
     }]
   };
-}, DemoComponent(LitElement));
+}, demoComponentStyle(LitElement));

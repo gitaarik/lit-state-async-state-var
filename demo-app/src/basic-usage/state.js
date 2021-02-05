@@ -5,18 +5,11 @@ import { currentTime } from '@app/current-time.js';
 
 class DemoState extends LitState {
 
-    /*@asyncStateVar({
-        get: '_getData',
-        set: '_setData'
-    })
-    data = '[initial value]';*/
-
     @asyncStateVar()
     data() {
         return {
             initialValue: '[initial value]',
-            get: () => this._getData(),
-            // set: value => this._setData(value)
+            get: () => this._getData()
         };
     }
 

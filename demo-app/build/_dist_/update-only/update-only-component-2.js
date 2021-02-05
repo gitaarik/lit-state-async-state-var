@@ -31,9 +31,10 @@ function _iterableToArray(iter) { if (typeof Symbol !== "undefined" && Symbol.it
 function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
 
 import { customElement, LitElement, html, css } from '../../web_modules/lit-element.js';
-import { DemoComponent } from '../../web_modules/lit-element-demo-app-helpers.js';
+import { demoComponentStyle } from '../demo-component.js';
 import { observeState } from '../../web_modules/lit-element-state.js';
 import { demoState } from './state.js';
+import '../../web_modules/lit-docs.js';
 export let UpdateOnlyComponent2 = _decorate([customElement('update-only-component-2')], function (_initialize, _observeState) {
   class UpdateOnlyComponent2 extends _observeState {
     constructor(...args) {
@@ -52,29 +53,33 @@ export let UpdateOnlyComponent2 = _decorate([customElement('update-only-componen
       value: function render() {
         return html`
 
-            <h2>&lt;component-2&gt;</h2>
-            <h3 class="status">Status: ${this.dataStatus}</h3>
+            <showcase-box>
 
-            <h3 class="value">
-                <span>Value:</span>
-                <input
-                    type="text"
-                    .value=${demoState.data}
-                    @keyup=${event => demoState.data = event.target.value}
-                    ?disabled=${demoState.data.isPending()}
-                />
-            </h3>
+                <h2>&lt;component-2&gt;</h2>
+                <h3 class="status">Status: ${this.dataStatus}</h3>
 
-            <div class="buttons">
+                <h3 class="value">
+                    <span>Value:</span>
+                    <input
+                        type="text"
+                        .value=${demoState.data}
+                        @keyup=${event => demoState.data = event.target.value}
+                        ?disabled=${demoState.data.isPending()}
+                    />
+                </h3>
 
-                <button
-                    @click=${() => demoState.data.push()}
-                    ?disabled=${demoState.data.isPending() || !demoState.data.isPendingChange()}
-                >
-                    push
-                </button>
+                <div class="buttons">
 
-            </div>
+                    <button
+                        @click=${() => demoState.data.push()}
+                        ?disabled=${demoState.data.isPending() || !demoState.data.isPendingChange()}
+                    >
+                        push
+                    </button>
+
+                </div>
+
+            </showcase-box>
 
         `;
       }
@@ -112,4 +117,4 @@ export let UpdateOnlyComponent2 = _decorate([customElement('update-only-componen
       }
     }]
   };
-}, observeState(DemoComponent(LitElement)));
+}, observeState(demoComponentStyle(LitElement)));

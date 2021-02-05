@@ -12,42 +12,46 @@ export class AsyncUpdateComponent1 extends observeState(demoComponentStyle(LitEl
 
         return html`
 
-            <h2>&lt;component-1&gt;</h2>
+            <showcase-box>
 
-            <h3 class="status">Status: ${this.dataStatus}</h3>
-            <h3 class="value">Value: ${demoState.data}</h3>
+                <h2>&lt;component-1&gt;</h2>
 
-            <div class="buttons">
+                <h3 class="status">Status: ${this.dataStatus}</h3>
+                <h3 class="value">Value: ${demoState.data}</h3>
 
-                <button
-                    @click=${() => demoState.data.reload()}
-                    ?disabled=${demoState.data.isPending()}
-                >
-                    reload data
-                </button>
+                <div class="buttons">
 
-                <button
-                    @click=${() => demoState.data.push('<component-1> updated the data!')}
-                    ?disabled=${demoState.data.isPending()}
-                >
-                    update data
-                </button>
+                    <button
+                        @click=${() => demoState.data.reload()}
+                        ?disabled=${demoState.data.isPending()}
+                    >
+                        reload data
+                    </button>
 
-                <button
-                    @click=${() => demoState.simulateErrorReload()}
-                    ?disabled=${demoState.data.isPending()}
-                >
-                    reload error
-                </button>
+                    <button
+                        @click=${() => demoState.data.push('<component-1> updated the data!')}
+                        ?disabled=${demoState.data.isPending()}
+                    >
+                        update data
+                    </button>
 
-                <button
-                    @click=${() => demoState.simulateErrorUpdate()}
-                    ?disabled=${demoState.data.isPending()}
-                >
-                    update error
-                </button>
+                    <button
+                        @click=${() => demoState.simulateErrorReload()}
+                        ?disabled=${demoState.data.isPending()}
+                    >
+                        reload error
+                    </button>
 
-            </div>
+                    <button
+                        @click=${() => demoState.simulateErrorUpdate()}
+                        ?disabled=${demoState.data.isPending()}
+                    >
+                        update error
+                    </button>
+
+                </div>
+
+            </showcase-box>
 
         `;
 

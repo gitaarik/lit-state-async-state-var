@@ -31,12 +31,11 @@ function _iterableToArray(iter) { if (typeof Symbol !== "undefined" && Symbol.it
 function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
 
 import { customElement, LitElement, property, html, css } from '../../web_modules/lit-element.js';
-import { DemoPage } from '../../web_modules/lit-element-demo-app-helpers.js';
-import '../../web_modules/lit-element-demo-app-helpers.js';
+import { LitDocsContent } from '../../web_modules/lit-docs.js';
 import './async-update-component-1.js';
 import './async-update-component-2.js';
-export let UpdateUsage = _decorate([customElement('update-usage')], function (_initialize, _DemoPage) {
-  class UpdateUsage extends _DemoPage {
+export let UpdateUsage = _decorate([customElement('update-usage')], function (_initialize, _LitDocsContent) {
+  class UpdateUsage extends _LitDocsContent {
     constructor(...args) {
       super(...args);
 
@@ -145,11 +144,14 @@ import { currentTime } from './utils.js';
 
 class DemoState extends LitState {
 
-    data = asyncStateVar({
-        get: () => this._getData(),
-        set: value => this._setData(value),
-        initialValue: "[initial value]" // optional
-    });
+    @asyncStateVar()
+    data() {
+        return {
+            get: () => this._getData(),
+            set: value => this._setData(value),
+            initialValue: "[initial value]" // optional
+        };
+    }
 
     _simulateError = false;
 
@@ -294,4 +296,4 @@ export class AsyncComponent1 extends observeState(LitElement) {
       }
     }]
   };
-}, DemoPage(LitElement));
+}, LitDocsContent(LitElement));

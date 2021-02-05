@@ -31,12 +31,11 @@ function _iterableToArray(iter) { if (typeof Symbol !== "undefined" && Symbol.it
 function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
 
 import { customElement, LitElement, property, html, css } from '../../web_modules/lit-element.js';
-import { DemoPage } from '../../web_modules/lit-element-demo-app-helpers.js';
-import '../../web_modules/lit-element-demo-app-helpers.js';
+import { LitDocsContent } from '../../web_modules/lit-docs.js';
 import './async-component-1.js';
 import './async-component-2.js';
-export let BasicUsage = _decorate([customElement('basic-usage')], function (_initialize, _DemoPage) {
-  class BasicUsage extends _DemoPage {
+export let BasicUsage = _decorate([customElement('basic-usage')], function (_initialize, _LitDocsContent) {
+  class BasicUsage extends _LitDocsContent {
     constructor(...args) {
       super(...args);
 
@@ -55,25 +54,28 @@ export let BasicUsage = _decorate([customElement('basic-usage')], function (_ini
 
             <div>
 
-                <h1>LitState <code>asyncStateVar</code> demo</h1>
+                <h1>Basic usage</h1>
 
                 <p>
-                    To make working with asynchronous data easy, LitState has
-                    the <code>asyncStateVar</code>. It's a special
-                    kind of <code>stateVar</code> which holds a
+                    To make it easy to work with asynchronous data in LitState,
+                    there's the <code>asyncStateVar</code>. It's a special kind
+                    of <code>stateVar</code> on which you can define a
                     <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise" target="_blank">promise</a>.
-                    The promise is automatically executed when the
-                    <code>asyncStateVar</code> is being used in a
-                    component. When the promise settles, it will re-render the
-                    component. The component can check the status of the
-                    <code>asyncStateVar</code>, so it can display
-                    the status and it's value:
+                    This promise will asynchronously retrieve some data. It's
+                    automatically executed when the <code>asyncStateVar</code>
+                    is being used in a component. When the promise settles, it
+                    will re-render the component. The component can access the
+                    status of the promise, and render according to that.
                 </p>
+
+                <h2>Demo</h2>
 
                 <div class="demoComponents">
                     <async-component-1></async-component-1>
                     <async-component-2></async-component-2>
                 </div>
+
+                <h2>Explanation</h2>
 
                 <p>
                     Our <code>demoState</code> has a simple fake
@@ -85,9 +87,18 @@ export let BasicUsage = _decorate([customElement('basic-usage')], function (_ini
                 </p>
                     
                 <p>
-                    On the <code>asyncStateVar</code> we define the
-                    function that returns the promise for <strong>retrieving
-                    the data</strong>. In this case <code>_getData()</code>:
+                    We use the <code>asyncStateVar()</code> decorator to decorate
+                    a method. This method returns an object containing data
+                    about the asyncStateVar. It contains the initial value and
+                    a function that returns the promise for <strong>retrieving
+                    the data</strong>. In this case <code>_getData()</code>.
+                </p>
+                    
+                <p>
+                    The <code>asyncStateVar()</code> decorator decorates a
+                    method, and not a instance variable, because in a method we
+                    have access to the instance's <code>this</code> reference.
+                    We need this to return the getter method.
                 </p>
 
                 <p>
@@ -155,10 +166,13 @@ import { currentTime } from './utils.js';
 
 class DemoState extends LitState {
 
-    data = asyncStateVar({
-        get: () => this._getData(),
-        initialValue: '[initial value]' // optional
-    });
+    @asyncStateVar()
+    data() {
+        return {
+            initialValue: '[initial value]',
+            get: () => this._getData()
+        };
+    }
 
     _simulateError = false;
 
@@ -255,4 +269,4 @@ export class AsyncComponent1 extends observeState(LitElement) {
       }
     }]
   };
-}, DemoPage(LitElement));
+}, LitDocsContent(LitElement));

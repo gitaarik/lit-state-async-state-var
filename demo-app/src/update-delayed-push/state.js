@@ -4,11 +4,14 @@ import { asyncStateVar } from '@app/async-state-var.js';
 
 class DemoState extends LitState {
 
-    data = asyncStateVar({
-        get: () => this._getData(),
-        set: value => this._setData(value),
-        initialValue: "[initial value]"
-    });
+    @asyncStateVar()
+    data() {
+        return {
+            get: () => this._getData(),
+            set: value => this._setData(value),
+            initialValue: "[initial value]"
+        };
+    };
 
     _getData() {
         return new Promise((resolve, reject) => {

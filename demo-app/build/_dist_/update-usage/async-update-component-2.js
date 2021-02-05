@@ -31,9 +31,10 @@ function _iterableToArray(iter) { if (typeof Symbol !== "undefined" && Symbol.it
 function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
 
 import { customElement, LitElement, html, css } from '../../web_modules/lit-element.js';
-import { DemoComponent } from '../../web_modules/lit-element-demo-app-helpers.js';
+import { demoComponentStyle } from '../demo-component.js';
 import { observeState } from '../../web_modules/lit-element-state.js';
 import { demoState } from './state.js';
+import '../../web_modules/lit-docs.js';
 export let AsyncUpdateComponent2 = _decorate([customElement('async-update-component-2')], function (_initialize, _observeState) {
   class AsyncUpdateComponent2 extends _observeState {
     constructor(...args) {
@@ -52,42 +53,46 @@ export let AsyncUpdateComponent2 = _decorate([customElement('async-update-compon
       value: function render() {
         return html`
 
-            <h2>&lt;component-2&gt;</h2>
+            <showcase-box>
 
-            <h3 class="status">Status: ${this.dataStatus}</h3>
-            <h3 class="value">Value: ${demoState.data}</h3>
+                <h2>&lt;component-2&gt;</h2>
 
-            <div class="buttons">
+                <h3 class="status">Status: ${this.dataStatus}</h3>
+                <h3 class="value">Value: ${demoState.data}</h3>
 
-                <button
-                    @click=${() => demoState.data.reload()}
-                    ?disabled=${demoState.data.isPending()}
-                >
-                    reload data
-                </button>
+                <div class="buttons">
 
-                <button
-                    @click=${() => demoState.data.push('<component-2> updated the data!')}
-                    ?disabled=${demoState.data.isPending()}
-                >
-                    update data
-                </button>
+                    <button
+                        @click=${() => demoState.data.reload()}
+                        ?disabled=${demoState.data.isPending()}
+                    >
+                        reload data
+                    </button>
 
-                <button
-                    @click=${() => demoState.simulateErrorReload()}
-                    ?disabled=${demoState.data.isPending()}
-                >
-                    reload error
-                </button>
+                    <button
+                        @click=${() => demoState.data.push('<component-2> updated the data!')}
+                        ?disabled=${demoState.data.isPending()}
+                    >
+                        update data
+                    </button>
 
-                <button
-                    @click=${() => demoState.simulateErrorUpdate()}
-                    ?disabled=${demoState.data.isPending()}
-                >
-                    update error
-                </button>
+                    <button
+                        @click=${() => demoState.simulateErrorReload()}
+                        ?disabled=${demoState.data.isPending()}
+                    >
+                        reload error
+                    </button>
 
-            </div>
+                    <button
+                        @click=${() => demoState.simulateErrorUpdate()}
+                        ?disabled=${demoState.data.isPending()}
+                    >
+                        update error
+                    </button>
+
+                </div>
+
+            </showcase-box>
 
         `;
       }
@@ -113,4 +118,4 @@ export let AsyncUpdateComponent2 = _decorate([customElement('async-update-compon
       }
     }]
   };
-}, observeState(DemoComponent(LitElement)));
+}, observeState(demoComponentStyle(LitElement)));

@@ -31,7 +31,7 @@ function _iterableToArray(iter) { if (typeof Symbol !== "undefined" && Symbol.it
 function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
 
 import { customElement, LitElement, property, html, css } from '../web_modules/lit-element.js';
-import '../web_modules/lit-element-demo-app-helpers.js';
+import '../web_modules/lit-docs.js';
 import './basic-usage/index.js';
 import './update-usage/index.js';
 import './update-delayed-push/index.js';
@@ -53,31 +53,31 @@ export let LitStateAsyncStateVarDemo = _decorate([customElement('lit-state-async
       kind: "method",
       key: "render",
       value: function render() {
-        return html`<demo-shell .pages=${this.pages}></demo-shell>`;
+        return html`<lit-docs-ui docsTitle="LitState asyncStateVar" .pages=${this.pages}></lit-docs-ui>`;
       }
     }, {
       kind: "get",
       key: "pages",
       value: function pages() {
         return [{
-          hash: 'basic-usage',
           title: 'Basic usage',
+          path: 'basic-usage',
           template: html`<basic-usage></basic-usage>`
         }, {
-          hash: 'update',
           title: 'Update',
+          path: 'update',
           template: html`<update-usage></update-usage>`
         }, {
-          hash: 'update-delayed-push',
           title: 'Update with delayed push',
+          path: 'update-delayed-push',
           template: html`<update-delayed-push></update-delayed-push>`
         }, {
-          hash: 'update-only',
           title: 'Update only',
+          path: 'update-only',
           template: html`<update-only></update-only>`
         }, {
-          hash: 'actions',
           title: 'Actions',
+          path: 'actions',
           template: html`<action-usage></action-usage>`
         }];
       }

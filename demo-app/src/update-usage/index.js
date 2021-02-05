@@ -103,11 +103,14 @@ import { currentTime } from './utils.js';
 
 class DemoState extends LitState {
 
-    data = asyncStateVar({
-        get: () => this._getData(),
-        set: value => this._setData(value),
-        initialValue: "[initial value]" // optional
-    });
+    @asyncStateVar()
+    data() {
+        return {
+            get: () => this._getData(),
+            set: value => this._setData(value),
+            initialValue: "[initial value]" // optional
+        };
+    }
 
     _simulateError = false;
 

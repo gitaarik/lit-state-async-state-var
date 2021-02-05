@@ -31,9 +31,10 @@ function _iterableToArray(iter) { if (typeof Symbol !== "undefined" && Symbol.it
 function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
 
 import { customElement, LitElement, html, css } from '../../web_modules/lit-element.js';
-import { DemoComponent } from '../../web_modules/lit-element-demo-app-helpers.js';
+import { demoComponentStyle } from '../demo-component.js';
 import { observeState } from '../../web_modules/lit-element-state.js';
 import { demoState } from './state.js';
+import '../../web_modules/lit-docs.js';
 export let DelayedPushComponent1 = _decorate([customElement('delayed-push-component-1')], function (_initialize, _observeState) {
   class DelayedPushComponent1 extends _observeState {
     constructor(...args) {
@@ -52,50 +53,54 @@ export let DelayedPushComponent1 = _decorate([customElement('delayed-push-compon
       value: function render() {
         return html`
 
-            <h2>&lt;component-1&gt;</h2>
-            <h3 class="status">Status: ${this.dataStatus}</h3>
+            <showcase-box>
 
-            <h3 class="value">
-                <span>Value:</span>
-                <input
-                    type="text"
-                    .value=${demoState.data}
-                    @keyup=${event => demoState.data = event.target.value}
-                    ?disabled=${demoState.data.isPending()}
-                />
-            </h3>
+                <h2>&lt;component-1&gt;</h2>
+                <h3 class="status">Status: ${this.dataStatus}</h3>
 
-            <div class="buttons">
+                <h3 class="value">
+                    <span>Value:</span>
+                    <input
+                        type="text"
+                        .value=${demoState.data}
+                        @keyup=${event => demoState.data = event.target.value}
+                        ?disabled=${demoState.data.isPending()}
+                    />
+                </h3>
 
-                <button
-                    @click=${() => demoState.data.push()}
-                    ?disabled=${demoState.data.isPending()}
-                >
-                    push
-                </button>
+                <div class="buttons">
 
-                <button
-                    @click=${() => demoState.data.reset()}
-                    ?disabled=${demoState.data.isPending()}
-                >
-                    reset
-                </button>
+                    <button
+                        @click=${() => demoState.data.push()}
+                        ?disabled=${demoState.data.isPending()}
+                    >
+                        push
+                    </button>
 
-                <button
-                    @click=${() => demoState.data.restore()}
-                    ?disabled=${demoState.data.isPending()}
-                >
-                    restore
-                </button>
+                    <button
+                        @click=${() => demoState.data.reset()}
+                        ?disabled=${demoState.data.isPending()}
+                    >
+                        reset
+                    </button>
 
-                <button
-                    @click=${() => demoState.data.reload()}
-                    ?disabled=${demoState.data.isPending()}
-                >
-                    reload
-                </button>
+                    <button
+                        @click=${() => demoState.data.restore()}
+                        ?disabled=${demoState.data.isPending()}
+                    >
+                        restore
+                    </button>
 
-            </div>
+                    <button
+                        @click=${() => demoState.data.reload()}
+                        ?disabled=${demoState.data.isPending()}
+                    >
+                        reload
+                    </button>
+
+                </div>
+
+            </showcase-box>
 
         `;
       }
@@ -137,4 +142,4 @@ export let DelayedPushComponent1 = _decorate([customElement('delayed-push-compon
       }
     }]
   };
-}, observeState(DemoComponent(LitElement)));
+}, observeState(demoComponentStyle(LitElement)));

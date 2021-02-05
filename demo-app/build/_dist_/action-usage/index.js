@@ -31,12 +31,11 @@ function _iterableToArray(iter) { if (typeof Symbol !== "undefined" && Symbol.it
 function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
 
 import { customElement, LitElement, property, html, css } from '../../web_modules/lit-element.js';
-import { DemoPage } from '../../web_modules/lit-element-demo-app-helpers.js';
-import '../../web_modules/lit-element-demo-app-helpers.js';
+import { LitDocsContent } from '../../web_modules/lit-docs.js';
 import './send-email-component.js';
 import './send-email-status-component.js';
-export let ActionUsage = _decorate([customElement('action-usage')], function (_initialize, _DemoPage) {
-  class ActionUsage extends _DemoPage {
+export let ActionUsage = _decorate([customElement('action-usage')], function (_initialize, _LitDocsContent) {
+  class ActionUsage extends _LitDocsContent {
     constructor(...args) {
       super(...args);
 
@@ -217,4 +216,4 @@ export class SendEmailStatusComponent extends observeState(LitElement) {
       }
     }]
   };
-}, DemoPage(LitElement));
+}, LitDocsContent(LitElement));

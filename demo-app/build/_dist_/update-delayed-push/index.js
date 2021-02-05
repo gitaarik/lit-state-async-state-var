@@ -31,12 +31,11 @@ function _iterableToArray(iter) { if (typeof Symbol !== "undefined" && Symbol.it
 function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
 
 import { customElement, LitElement, property, html, css } from '../../web_modules/lit-element.js';
-import { DemoPage } from '../../web_modules/lit-element-demo-app-helpers.js';
-import '../../web_modules/lit-element-demo-app-helpers.js';
+import { LitDocsContent } from '../../web_modules/lit-docs.js';
 import './delayed-push-component-1.js';
 import './delayed-push-component-2.js';
-export let UpdateDelayedPush = _decorate([customElement('update-delayed-push')], function (_initialize, _DemoPage) {
-  class UpdateDelayedPush extends _DemoPage {
+export let UpdateDelayedPush = _decorate([customElement('update-delayed-push')], function (_initialize, _LitDocsContent) {
+  class UpdateDelayedPush extends _LitDocsContent {
     constructor(...args) {
       super(...args);
 
@@ -245,4 +244,4 @@ export class AsyncDelayedPushComponent1 extends observeState(LitElement) {
       }
     }]
   };
-}, DemoPage(LitElement));
+}, LitDocsContent(LitElement));

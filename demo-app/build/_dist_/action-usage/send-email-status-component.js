@@ -31,9 +31,10 @@ function _iterableToArray(iter) { if (typeof Symbol !== "undefined" && Symbol.it
 function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
 
 import { customElement, LitElement, html } from '../../web_modules/lit-element.js';
-import { DemoComponent } from '../../web_modules/lit-element-demo-app-helpers.js';
+import { demoComponentStyle } from '../demo-component.js';
 import { observeState } from '../../web_modules/lit-element-state.js';
 import { demoState } from './state.js';
+import '../../web_modules/lit-docs.js';
 export let SendEmailStatusComponent = _decorate([customElement('send-email-status-component')], function (_initialize, _observeState) {
   class SendEmailStatusComponent extends _observeState {
     constructor(...args) {
@@ -51,8 +52,10 @@ export let SendEmailStatusComponent = _decorate([customElement('send-email-statu
       key: "render",
       value: function render() {
         return html`
-            <h2>&lt;send-email-status-component&gt;</h2>
-            <h3>Status: ${this.sendMailStatus}</h3>
+            <showcase-box>
+                <h2>&lt;send-email-status-component&gt;</h2>
+                <h3>Status: ${this.sendMailStatus}</h3>
+            </showcase-box>
         `;
       }
     }, {
@@ -71,4 +74,4 @@ export let SendEmailStatusComponent = _decorate([customElement('send-email-statu
       }
     }]
   };
-}, observeState(DemoComponent(LitElement)));
+}, observeState(demoComponentStyle(LitElement)));

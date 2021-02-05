@@ -5,16 +5,107 @@ class AsyncStateVarHandler extends StateVar {
 
     constructor(args) {
         super(args);
-        this.options = args.options.element.descriptor.value();
         this._init();
     }
 
-    [Symbol.toPrimitive](hint) {
-        return this.getValue();
+    _init() {
+        this._initiatedGet = false;
+        this._pendingGet = false;
+        this._pendingSet = false;
+        this._pendingChange = false;
+        this._fulfilledGet = false;
+        this._fulfilledSet = false;
+        this._rejectedGet = false;
+        this._rejectedSet = false;
+        this._errorGet = null;
+        this._errorSet = null;
+        this._value = this._hasOption('initialValue') ? this._getOption('initialValue') : null;
+        this._hasChange = false;
+        this._newValue = null;
     }
 
-    valueOf() {
-        return this.getValue();
+    _getOption(key) {
+        if (this._hasOption(key)) {
+            return this.options[key];
+        } else {
+            throw `asyncStateVar missing '${key}' option.`;
+        }
+    }
+
+    _hasOption(key) {
+        return (key in this.options);
+    }
+
+    get() {
+        this._initGet();
+        return new AsyncStateVarObj(this);
+    }
+
+    set(value) {
+
+        this._newValue = value;
+
+        if (this._newValue === this.value) {
+            this._hasChange = false;
+            this._pendingChange = false;
+        } else {
+            this._hasChange = true;
+            this._pendingChange = true;
+        }
+
+        this._notifyChange();
+
+    }
+
+    _initGet() {
+
+        if (!this._hasOption('get') || this._initiatedGet) return;
+        this._initiatedGet = true;
+
+        this._pendingGet = true;
+        this._rejectedGet = false;
+        this._fulfilledGet = false;
+        this._fulfilledGet = false;
+
+        this._loadValue();
+
+    }
+
+    _loadValue() {
+        this._getOption('get')().then(value => {
+            this._fulfilledGet = true;
+            this._errorGet = null;
+            this._pendingChange = false;
+            this._hasChange = false;
+            this._value = value;
+        }).catch(error => {
+            this._rejectedGet = true;
+            this._errorGet = error;
+        }).finally(() => {
+            this._pendingGet = false;
+            this._rejectedSet = false;
+            this._notifyChange();
+        });
+    }
+
+    _pushValue(value) {
+        this._getOption('set')(value).then(value => {
+            this._fulfilledSet = true;
+            this._value = value;
+            this._pendingChange = false;
+            this._hasChange = false;
+        }).catch(error => {
+            this._rejectedSet = true;
+            this._errorSet = error;
+        }).finally(() => {
+            this._pendingSet = false;
+            this._rejectedGet = false;
+            this._notifyChange();
+        });
+    }
+
+    _notifyChange() {
+        this.notifyChange();
     }
 
     isPending() {
@@ -81,7 +172,7 @@ class AsyncStateVarHandler extends StateVar {
     getValue() {
         this.recordRead();
         if (this._pendingChange) return this._newValue;
-        return this.value;
+        return this._value;
     }
 
     hasChange() {
@@ -95,16 +186,24 @@ class AsyncStateVarHandler extends StateVar {
         this._fulfilledSet = false;
         this._rejectedGet = false;
         this._rejectedSet = false;
-        this.notifyChange();
+        this._notifyChange();
     }
 
     restore() {
         if (!this._hasChange) return;
         this._pendingChange = true;
-        this.notifyChange();
+        this._notifyChange();
     }
 
-    push(value = undefined) {
+    push(value) {
+
+        this._pendingSet = true;
+        this._fulfilledSet = false;
+        this._fulfilledGet = false;
+        this._rejectedSet = false;
+
+        this._notifyChange();
+
         if (value === undefined) {
             if (this._pendingChange) {
                 this._pushValue(this._newValue);
@@ -114,120 +213,126 @@ class AsyncStateVarHandler extends StateVar {
         } else {
             this._pushValue(value);
         }
+
     }
 
     reload() {
-        this._loadValue();
-    }
-
-    _init() {
-        this._initiatedGet = false;
-        this._pendingGet = false;
-        this._pendingSet = false;
-        this._pendingChange = false;
-        this._fulfilledGet = false;
-        this._fulfilledSet = false;
-        this._rejectedGet = false;
-        this._rejectedSet = false;
-        this._errorGet = null;
-        this._errorSet = null;
-        this.value = this._hasOption('initialValue') ? this._getOption('initialValue') : null;
-        this._hasChange = false;
-        this._newValue = null;
-    }
-
-    _getOption(key) {
-        if (this._hasOption(key)) {
-            return this.options[key];
-        } else {
-            throw `asyncStateVar missing '${key}' option.`;
-        }
-    }
-
-    _hasOption(key) {
-        return (key in this.options);
-    }
-
-    get() {
-
-        if (this._hasOption('get')) {
-            this._initGet();
-        }
-
-        return this;
-
-    }
-
-    set(value) {
-
-        this._newValue = value;
-
-        if (this._newValue === this.value) {
-            this._hasChange = false;
-            this._pendingChange = false;
-        } else {
-            this._hasChange = true;
-            this._pendingChange = true;
-        }
-
-        this.notifyChange();
-
-    }
-
-    _initGet() {
-        if (this._initiatedGet) return;
-        this._initiatedGet = true;
-        this._loadValue();
-    }
-
-    _loadValue() {
 
         this._pendingGet = true;
         this._rejectedGet = false;
         this._fulfilledGet = false;
         this._fulfilledGet = false;
-        this.notifyChange();
+        this._notifyChange();
 
-        this._getOption('get')().then(value => {
-            this._fulfilledGet = true;
-            this.value = value;
-            this._errorGet = null;
-            this._pendingChange = false;
-            this._hasChange = false;
-        }).catch(error => {
-            this._rejectedGet = true;
-            this._errorGet = error;
-        }).finally(() => {
-            this._pendingGet = false;
-            this._rejectedSet = false;
-            this.notifyChange();
-        });
+        this._loadValue();
 
     }
 
-    _pushValue(value) {
+}
 
-        this._pendingSet = true;
-        this._fulfilledSet = false;
-        this._fulfilledGet = false;
-        this._rejectedSet = false;
 
-        this.notifyChange();
+class AsyncStateVarObj {
 
-        this._getOption('set')(value).then(value => {
-            this._fulfilledSet = true;
-            this.value = value;
-            this._pendingChange = false;
-            this._hasChange = false;
-        }).catch(error => {
-            this._rejectedSet = true;
-            this._errorSet = error;
-        }).finally(() => {
-            this._pendingSet = false;
-            this._rejectedGet = false;
-            this.notifyChange();
-        });
+    constructor(asyncStateVarHandler) {
 
+        this.__asyncStateVarHandler = asyncStateVarHandler;
+
+        if (typeof this.getValue() === 'object') {
+            // When the value is an object, set the properties of that object
+            // on this class, so that those properties are easily accessible by
+            // doing `stateObj.stateVar.propertyName`. If the object also
+            // contains methods the user needs to access, one should use
+            // `stateObj.stateVar.getValue().methodName()`. `getValue()`
+            // returns the original value. Without `getValue()`, you'll get
+            // this object, which contains the helper methods like
+            // `isPending()` and `isFulfilled()` etc.
+            Object.assign(this, this.getValue());
+        }
+
+    }
+
+    [Symbol.toPrimitive](hint) {
+        return this.getValue();
+    }
+
+    valueOf() {
+        return this.getValue();
+    }
+
+    getValue() {
+        return this.__asyncStateVarHandler.getValue();
+    }
+
+    isPending() {
+        return this.isPendingGet() || this.isPendingSet();
+    }
+
+    isPendingGet() {
+        return this.__asyncStateVarHandler.isPendingGet();
+    }
+
+    isPendingSet() {
+        return this.__asyncStateVarHandler.isPendingSet();
+    }
+
+    isPendingChange() {
+        return this.__asyncStateVarHandler.isPendingChange();
+    }
+
+    isRejected() {
+        return this.__asyncStateVarHandler.isRejected();
+    }
+
+    isRejectedGet() {
+        return this.__asyncStateVarHandler.isRejectedGet();
+    }
+
+    isRejectedSet() {
+        return this.__asyncStateVarHandler.isRejectedSet();
+    }
+
+    getError() {
+        return this.__asyncStateVarHandler.getError();
+    }
+
+    getErrorGet() {
+        return this.__asyncStateVarHandler.getErrorGet();
+    }
+
+    getErrorSet() {
+        return this.__asyncStateVarHandler.getErrorSet();
+    }
+
+    isFulfilled() {
+        return this.__asyncStateVarHandler.isFulfilled();
+    }
+
+    isFulfilledGet() {
+        return this.__asyncStateVarHandler.isFulfilledGet();
+    }
+
+    isFulfilledSet() {
+        return this.__asyncStateVarHandler.isFulfilledSet();
+    }
+
+    hasChange() {
+        return this.__asyncStateVarHandler.hasChange();
+    }
+
+    reset() {
+        return this.__asyncStateVarHandler.reset();
+    }
+
+    restore() {
+        return this.__asyncStateVarHandler.restore();
+    }
+
+    push(value = undefined) {
+        return this.__asyncStateVarHandler.push(value);
+    }
+
+    reload() {
+        return this.__asyncStateVarHandler.reload();
     }
 
 }

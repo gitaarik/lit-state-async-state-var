@@ -1,4 +1,4 @@
-import { L as LitElement, h as html, c as css } from './common/lit-element-7d33ee9a.js';
+import { L as LitElement, h as html, c as css, r as render } from './common/lit-element-6b065c14.js';
 
 function deepFreeze(obj) {
     if (obj instanceof Map) {
@@ -3149,7 +3149,7 @@ core.registerLanguage('javascript', javascript_1);
 core.registerLanguage('xml', xml_1);
 
 
-class CodeBig extends LitElement {
+class CodeBlock extends LitElement {
 
     static get properties() {
         return {
@@ -3210,7 +3210,7 @@ class CodeBig extends LitElement {
                 margin: 0;
                 padding: 10px;
                 width: 100%;
-                white-space: pre;
+                white-space: pre-wrap;
                 border-radius: 5px;
                 overflow-x: auto;
                 color: #ffffff;
@@ -3291,157 +3291,179 @@ class CodeBig extends LitElement {
 
 }
 
-customElements.define('code-block', CodeBig);
 
-class CodeSmall extends LitElement {
+customElements.define('code-block', CodeBlock);
 
-    render() {
-        return html`<slot></slot>`;
+const observeState = superclass => class extends superclass {
+
+    constructor() {
+        super();
+        this._observers = [];
     }
 
-    static get styles() {
-        return css`
-            :host {
-                display: inline-block;
-                padding: 2px 6px;
-                margin: 1px;
-                background: #444;
-                border-radius: 5px;
-                color: white;
-                white-space: pre;
+    update(changedProperties) {
+        stateRecorder.start();
+        super.update(changedProperties);
+        this._initStateObservers();
+    }
+
+    disconnectedCallback() {
+        super.disconnectedCallback();
+        this._clearStateObservers();
+    }
+
+    _initStateObservers() {
+        this._clearStateObservers();
+        if (!this.isConnected) return;
+        this._addStateObservers(stateRecorder.finish());
+    }
+
+    _addStateObservers(stateVars) {
+        for (let [state, keys] of stateVars) {
+            const observer = () => this.requestUpdate();
+            this._observers.push([state, observer]);
+            state.addObserver(observer, keys);
+        }
+    }
+
+    _clearStateObservers() {
+        for (let [state, observer] of this._observers) {
+            state.removeObserver(observer);
+        }
+        this._observers = [];
+    }
+
+};
+
+
+class LitState {
+
+    constructor() {
+
+        this._stateVars = [];
+        this._observers = [];
+
+        return new Proxy(this, {
+
+            set: (obj, key, value) => {
+
+                if (this._isStateVar(key)) {
+                    const return_value = obj[key]._handleSet(value);
+                    if (return_value !== undefined) {
+                        return return_value;
+                    }
+                } else if (value instanceof BaseStateVar) {
+                    this._stateVars.push(key);
+                    value._recordRead = () => this._recordRead(key);
+                    value._notifyChange = () => this._notifyChange(key);
+                    obj[key] = value;
+                } else {
+                    obj[key] = value;
+                }
+
+                return true;
+
+            },
+
+            get: (obj, key) => {
+
+                if (obj._isStateVar(key)) {
+                    return obj[key]._handleGet();
+                }
+
+                return obj[key];
+
             }
-        `;
-    }
-
-}
-
-customElements.define('code', CodeSmall);
-
-class DemoShell extends LitElement {
-
-    _hashChangeCallback = null;
-
-    static get properties() {
-        return {
-            pages: {type: Array},
-            activePageHash: {type: String}
-        }
-    }
-
-    connectedCallback() {
-        super.connectedCallback();
-        this._addHashChangeCallback();
-        this._setInitialActiveHash();
-    }
-
-    _addHashChangeCallback() {
-        this._hashChangeCallback = window.addEventListener('hashchange', () => {
-            this.activePageHash = location.hash.substr(1);
-            window.scrollTo({ top: 0 });
-        });
-    }
-
-    _setInitialActiveHash() {
-
-        this.activePageHash = location.hash.substr(1);
-
-        if (!this.activePageHash) {
-            this.activePageHash = this.pages[0].hash;
-        }
-
-    }
-
-    render() {
-
-        return html`
-
-            <header>
-                <nav>${this.navButtons}</nav>
-            </header>
-
-            <article>
-                ${this.activePage.template}
-            </article>
-
-        `;
-
-    }
-
-    get navButtons() {
-
-        return this.pages.map(item => {
-
-            return html`
-                <button
-                    @click=${() => location.hash = item.hash}
-                    ?active=${this.activePage.hash == item.hash}
-                >
-                    ${item.title}
-                </button>
-            `;
 
         });
 
     }
 
-    get activePage() {
-
-        for (const item of this.pages) {
-            if (item.hash == this.activePageHash) {
-                return item;
-            }
-        }
-
-        // If `this.activePageHash` is not found, fall back to first page
-        return this.pages[0];
-
+    addObserver(observer, keys) {
+        this._observers.push({observer, keys});
     }
 
-    static get styles() {
+    removeObserver(observer) {
+        this._observers = this._observers.filter(observerObj => observerObj.observer !== observer);
+    }
 
-        return css`
+    _isStateVar(key) {
+        return this._stateVars.includes(key);
+    }
 
-            :host {
-                display: block;
-                margin: 0 auto;
-                padding: 15px;
-                max-width: 720px;
+    _recordRead(key) {
+        stateRecorder.recordRead(this, key);
+    }
+
+    _notifyChange(key) {
+        for (const observerObj of this._observers) {
+            if (!observerObj.keys || observerObj.keys.includes(key)) {
+                observerObj.observer(key);
             }
+        }    }
 
-            header {
-                margin-bottom: 25px;
-            }
+}
 
-            nav {
-                display: flex;
-            }
 
-            nav button {
-                margin: 0;
-                padding: 10px;
-                border: 1px #999 solid;
-                border-left-width: 0;
-                background: #C7C3BB;
-                color: #000;
-                cursor: pointer;
-            }
+class BaseStateVar {
+    _handleGet() {}
+    _handleSet(value) {}
+}
 
-            nav button:first-child {
-                border-left-width: 1px;
-            }
 
-            nav button:hover,
-            nav button[active] {
-                background: #DAD7D2;
-            }
+class StateVar extends BaseStateVar {
 
-        `;
+    constructor(initialValue) {
+        super();
+        this._value = initialValue;
+    }
 
+    _handleGet() {
+        this._recordRead();
+        return this._value;
+    }
+
+    _handleSet(value) {
+        if (this._value !== value) {
+            this._value = value;
+            this._notifyChange();
+        }
     }
 
 }
 
-customElements.define('demo-shell', DemoShell);
+
+function stateVar(defaultValue) {
+    return new StateVar(defaultValue);
+}
+
+
+class StateRecorder {
+
+    constructor() {
+        this._log = null;
+    }
+
+    start() {
+        this._log = new Map();
+    }
+
+    recordRead(stateObj, key) {
+        if (this._log === null) return;
+        const keys = this._log.get(stateObj) || [];
+        if (!keys.includes(key)) keys.push(key);
+        this._log.set(stateObj, keys);
+    }
+
+    finish() {
+        const stateVars = this._log;
+        this._log = null;
+        return stateVars;
+    }
+
+}
+
+const stateRecorder = new StateRecorder();
 
 function litStyle(myStyles) {
 
@@ -3463,52 +3485,9 @@ function litStyle(myStyles) {
 
     }
 
-    
-
 }
 
-const DemoComponent = litStyle(css`
-
-    :host {
-        display: block;
-        padding: 15px;
-        background: #DAD7D2;
-        border: 1px #666 solid;
-    }
-
-    h2 {
-        margin-top: 0;
-        font-size: 20px;
-        color: green;
-    }
-
-    h3 {
-        margin: 20px 0;
-        font-weight: 600;
-        font-size: 16px;
-    }
-
-    .status {
-        color: blue;
-    }
-
-    .value {
-        color: red;
-    }
-
-    .buttons {
-        display: flex;
-        flex-wrap: wrap;
-        margin: -5px 0 0 -5px;
-    }
-
-    .buttons > * {
-        margin: 5px 0 0 5px;
-    }
-
-`);
-
-const DemoPage = litStyle(css`
+const LitDocsStyle = litStyle(css`
 
     :host {
         display: block;
@@ -3518,8 +3497,16 @@ const DemoPage = litStyle(css`
         box-sizing: border-box;
     }
 
+    [hidden] {
+        display: none;
+    }
+
     :first-child {
         margin-top: 0;
+    }
+
+    :last-child {
+        margin-bottom: 0;
     }
 
     h1, h2, h3, h4, h5, h6 {
@@ -3560,7 +3547,17 @@ const DemoPage = litStyle(css`
     }
 
     a {
-        color: #000;
+        color: #384147;
+    }
+
+    code {
+        display: inline-block;
+        padding: 2px 6px;
+        margin: 1px;
+        background: #444;
+        border-radius: 5px;
+        color: white;
+        white-space: pre;
     }
 
     .demoComponents {
@@ -3576,15 +3573,835 @@ const DemoPage = litStyle(css`
 
 `);
 
-function currentTime() {
+class HamburgerIcon extends LitElement {
 
-    const date = new Date();
-    const hours = date.getHours() < 10 ? '0' + date.getHours() : date.getHours();
-    const minutes = date.getMinutes() < 10 ? '0' + date.getMinutes() : date.getMinutes();
-    const seconds = date.getSeconds() < 10 ? '0' + date.getSeconds() : date.getSeconds();
+    render() {
+        return html`
+            <svg viewBox="0 0 70 40" width="100%" height="100%">
+              <rect width="70" height="5" rx="5"></rect>
+              <rect width="70" height="5" rx="5" y="18"></rect>
+              <rect width="70" height="5" rx="5" y="35"></rect>
+            </svg>
+        `;
+    }
 
-    return hours + ':' + minutes + ':' + seconds;
+    static get styles() {
+
+        return css`
+
+            :host {
+                display: block;
+            }
+
+            svg {
+                height: 100%;
+            }
+
+            rect {
+                fill: #7b8184;
+            }
+
+        `;
+
+    }
 
 }
 
-export { DemoComponent, DemoPage, currentTime };
+
+customElements.define('hamburger-icon', HamburgerIcon);
+
+class CrossIcon extends LitElement {
+
+    render() {
+        return html`
+            <svg viewBox="0 0 100 100" width="100%" height="100%">
+                <line x1="0" y1="0" x2="100" y2="100" />
+                <line x1="100" y1="0" x2="0" y2="100" />
+            </svg>
+        `;
+    }
+
+    static get styles() {
+
+        return css`
+
+            :host {
+                display: block;
+            }
+
+            svg {
+                height: 100%;
+            }
+
+            line {
+                stroke: #7b8184;
+                stroke-width: 5px;
+            }
+
+        `;
+
+    }
+
+}
+
+
+customElements.define('cross-icon', CrossIcon);
+
+class LitDocsUiState extends LitState {
+
+    constructor() {
+        super();
+        this.pages = stateVar();
+        this.path = stateVar();
+        this.page = stateVar();
+        this.showMenu = stateVar();
+    }
+
+    /*static get stateVars() {
+        return {
+            pages: {},
+            path: {},
+            page: {},
+            showMenu: {}
+        }
+    }*/
+
+    setPath(path) {
+        if (path[0] === '/') path = path.substr(1);
+        this.path = path || '/';
+        this._initPageByPath();
+    }
+
+    navToPath(path, addToHistory = true) {
+
+        if (!path) {
+            path = '/';
+        }
+
+        if (
+            path.substr(0, 7) === 'http://'
+            || path.substr(0, 8) === 'https://'
+        ) {
+            path = path.split('/').slice(3).join('/');
+        }
+
+        if (path === this.path) {
+            return;
+        }
+
+        this.setPath(path);
+
+        if (addToHistory) {
+            history.pushState({}, this.page.title, this.path);
+        }
+
+        this.showMenu = false;
+        window.scrollTo(0, 0);
+
+    }
+
+    handlePageLinkClick(event) {
+
+        if (event.ctrlKey || event.shiftKey) {
+            // Ctrl/shift click opens a `<a>` link in new tab/window, so when
+            // one of these keys are pressed, don't override normal behavior.
+            return
+        }
+
+        event.preventDefault();
+
+        let target = event.target;
+        let href = event.target.href;
+
+        while (!href) {
+            target = target.parentNode;
+            href = target.href;
+        }
+
+        if (href) {
+            this.navToPath(href);
+        }
+
+    }
+
+    _initPageByPath() {
+
+        let path = this.path;
+
+        if (path === '/' || path === '') {
+            this.page = this.pages[0];
+            return;
+        }
+
+        if (path[0] === '/') {
+            path = path.substr(1);
+        }
+
+        this._setPageByPath(path, this.pages);
+
+        if (!this.page) {
+            this.page = this.pages[0];
+        }
+
+    }
+
+    _setPageByPath(path, pages) {
+
+        const firstPathPart = path.split('/')[0];
+
+        if (!firstPathPart) {
+            return;
+        }
+
+        for (const page of pages) {
+
+            if (page.path === firstPathPart) {
+
+                this.page = page;
+
+                if (page.submenu) {
+                    const pathRemainder = path.split('/').slice(1).join('/');
+                    this._setPageByPath(pathRemainder, page.submenu);
+                }
+
+                return;
+
+            }
+
+        }
+
+    }
+
+}
+
+const litDocsUiState = new LitDocsUiState();
+
+
+class LitDocsUI extends observeState(LitDocsStyle(LitElement)) {
+
+    static get properties() {
+        return {
+            docsTitle: {type: String},
+            pages: {type: Array}
+        }
+    }
+
+    constructor() {
+        super();
+        this.docsTitle = '';
+        this.pages = [];
+    }
+
+    connectedCallback() {
+        super.connectedCallback();
+        this._initState();
+        this._fixMenuWidthOnPageWidthChange();
+        this._initPopStateListener();
+    }
+
+    firstUpdated() {
+        super.firstUpdated();
+        this._fixMenuWidth();
+    }
+
+    _initState() {
+        litDocsUiState.pages = this.pages;
+        litDocsUiState.setPath(window.location.pathname);
+    }
+
+    _fixMenuWidth() {
+        this.shadowRoot.getElementById('menuSidebarContent').style.maxWidth = (() => {
+            if (window.innerWidth > 600) {
+                return this.shadowRoot.getElementById('menu').clientWidth + 'px';
+            } else {
+                return 'none';
+            }
+        })();
+    }
+
+    _resetMenuWidth() {
+        this.shadowRoot.getElementById('menuSidebarContent').style.maxWidth = 'none';
+    }
+
+    _fixMenuWidthOnPageWidthChange() {
+        window.addEventListener('resize', () => this._fixMenuWidth());
+    }
+
+    _initPopStateListener() {
+        window.addEventListener('popstate', event => {
+            litDocsUiState.navToPath(window.location.pathname, false);
+        });
+    }
+
+    render() {
+
+        return html`
+
+            <div id="layout" ?show-menu=${litDocsUiState.showMenu}>
+
+                <div id="menu">
+
+                    <div id="menuSidebarContent">
+                        <header>
+                            <a href="/" @click=${event => litDocsUiState.handlePageLinkClick(event)}>${this.docsTitle}</a>
+                        </header>
+                        <nav class="mainMenu menu">${this.navTree(this.pages)}</nav>
+                    </div>
+
+                    <div id="hamburgerMenu" @click=${this.handleHamburgerMenuClick}>
+                        <hamburger-icon ?hidden=${litDocsUiState.showMenu}></hamburger-icon>
+                        <cross-icon ?hidden=${!litDocsUiState.showMenu}></cross-icon>
+                    </div>
+
+                </div>
+
+                <article>
+                    <div id="articleContent">
+                        ${litDocsUiState.page.template}
+                    </div>
+                </article>
+
+            </div>
+
+        `;
+
+    }
+
+    navTree(pages, level = 0, pageNoPrefix = '', pathPrefix = '') {
+
+        if (!pages) {
+            return;
+        }
+
+        let pageNo = 0;
+
+        return pages.map(page => {
+
+            let path = pathPrefix + page.path;
+            if (path[-1] !== '/') path += '/';
+
+            pageNo++;
+
+            const navContent = html`
+                <span class="menuItemNo">${pageNoPrefix + pageNo}</span>
+                <span>${page.title}</span>
+            `;
+
+            const getMenuItem = () => {
+
+                if (page.template) {
+
+                    return html`
+                        <a
+                            class="menuItem menuItemLink"
+                            nav-level=${level}
+                            href=${path}
+                            @click=${event => litDocsUiState.handlePageLinkClick(event)}
+                            ?active=${page === litDocsUiState.page}
+                        >
+                            ${navContent}
+                        </a>
+                    `;
+
+                } else {
+
+                    return html`
+                        <span
+                            class="menuItem menuItemCategory"
+                            nav-level=${level}
+                        >
+                            ${navContent}
+                        </span>
+                    `;
+                }
+
+            };
+
+            const getSubMenu = () => {
+                if (page.submenu) {
+                    return html`
+                        <div class="menuItemSubmenu menu">
+                            ${this.navTree(page.submenu, level + 1, pageNoPrefix + pageNo + '.', path)}
+                        </div>
+                    `;
+                }
+            };
+
+            return html`
+                ${getMenuItem()}
+                ${getSubMenu()}
+            `;
+
+        });
+
+    }
+
+    handleTitleClick(event) {
+        this.handleMenuItemClick(event, this.pages[0], '/');
+    }
+
+    handleMenuItemClick(event, page, path) {
+
+        if (event.ctrlKey || event.shiftKey) {
+            // Ctrl/shift click opens a `<a>` link in new tab/window, so when
+            // one of these keys are pressed, don't override normal behavior.
+            return
+        }
+
+        event.preventDefault();
+        litDocsUiState.navToPath(path);
+
+    }
+
+    handleHamburgerMenuClick() {
+
+        if (litDocsUiState.showMenu) {
+            litDocsUiState.showMenu = false;
+        } else {
+            litDocsUiState.showMenu = true;
+        }
+
+        this._resetMenuWidth();
+
+    }
+
+    static get styles() {
+
+        return css`
+
+            * {
+                box-sizing: border-box;
+                --left-sidebar-width: 250px;
+                --header-height: 45px;
+            }
+
+            #layout {
+                display: flex;
+                margin: 0 auto;
+                min-height: 100vh;
+            }
+
+            #menuSidebarContent {
+                width: 100%;
+                max-width: var(--left-sidebar-width);
+            }
+
+            #menuSidebarContent header {
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                height: var(--header-height);
+                background: #bcb9b2;
+                border-bottom: 1px #999 solid;
+            }
+
+            #menuSidebarContent header a {
+                display: inline-block;
+                padding: 5px;
+                font-weight: 600;
+                text-decoration: none;
+                font-size: 20px;
+            }
+
+            .menu {
+                display: flex;
+                flex-direction: column;
+            }
+
+            .menuItem {
+                display: inline-flex;
+                align-items: center;
+                margin: 0;
+                padding: 8px;
+                border-bottom: 1px solid #999;
+                xborder-width: 1px 0;
+                text-align: left;
+                text-decoration: none;
+            }
+
+            .menuItemCategory {
+                font-weight: bold;
+                color: #384147;
+                xmargin-top: 5px;
+                xpadding-top: 15px;
+                xpadding-bottom: 15px;
+            }
+
+            .menuItemSubmenu {
+                xmargin: 5px 0;
+            }
+
+            .menuItemLink {
+                xbackground: #C7C3BB;
+            }
+
+            .menuItemLink {
+                cursor: pointer;
+            }
+
+            .menuItem[active],
+            .menuItemLink:hover {
+                background: #DAD7D2;
+                border-color: #999;
+            }
+
+            .menuItem[nav-level="1"] {
+                padding-left: 25px;
+            }
+
+            .menuItem[nav-level="2"] {
+                padding-left: 40px;
+            }
+
+            .menuItem[nav-level="3"] {
+                padding-left: 55px;
+            }
+
+            .menuItemNo {
+                font-size: 11px;
+                opacity: 0.6;
+                margin: 1px 7px 0 0;
+            }
+
+            article {
+                flex-grow: 1;
+                overflow-x: auto;
+                max-width: 100%;
+            }
+
+            #articleContent {
+                padding: 20px;
+                max-width: 720px;
+                width: 100%;
+            }
+
+            #hamburgerMenu {
+                display: none;
+            }
+
+            @media screen and (min-width: 601px) {
+
+                #menu {
+                    position: relative;
+                    width: 100%;
+                    max-width: var(--left-sidebar-width);
+                    background: #bcb9b2;
+                    border-right: 1px #999 solid;
+                }
+
+                #sideBarOpener {
+                    display: none;
+                }
+
+            }
+
+            @media screen and (max-width: 600px) {
+
+                #menuSidebarContent {
+                    position: fixed;
+                }
+
+                .mainMenu {
+                    overflow: auto;
+                    max-height: calc(100vh - var(--header-height));
+                }
+
+                #layout[show-menu] #menu {
+                    display: block;
+                    position: absolute;
+                }
+
+                article {
+                    padding-top: var(--header-height);
+                }
+
+                #layout[show-menu] article {
+                    display: none;
+                }
+
+                #layout:not([show-menu]) #menuSidebarContent nav {
+                    display: none;
+                }
+
+                #hamburgerMenu {
+                    position: fixed;
+                    display: block;
+                    top: 2px;
+                    right: 0;
+                    padding: 10px;
+                    cursor: pointer;
+                }
+
+                #hamburgerMenu hamburger-icon {
+                    height: 20px;
+                }
+
+                #hamburgerMenu cross-icon {
+                    height: 20px;
+                }
+
+                #hamburgerMenu .stripe {
+                    width: 100%;
+                    height: 4px;
+                    margin: 5px 0;
+                    background: grey;
+                }
+
+            }
+
+        `;
+
+    }
+
+}
+
+
+customElements.define('lit-docs-ui', LitDocsUI);
+
+class ShowcaseBox extends LitElement {
+
+    render() {
+        return html`<slot></slot>`;
+    }
+
+    static get styles() {
+
+        return css`
+            :host {
+                display: block;
+                padding: 15px;
+                background: #DAD7D2;
+                border: 1px #666 solid;
+            }
+        `;
+
+    }
+
+}
+
+
+customElements.define('showcase-box', ShowcaseBox);
+
+// Global container of all the anchors on the page. This is global so that the
+// `goToAnchor()` function can be used from any component.
+let ANCHORS = [];
+
+function scrollCorrection() {
+    if (window.innerWidth > 600) {
+        return 10;
+    } else {
+        return 50;
+    }
+}
+
+function scrollToAnchorExec(anchorData) {
+    const newScrollY = window.scrollY + anchorData.element.getBoundingClientRect().top - scrollCorrection();
+    window.scrollTo(0, newScrollY);
+}
+
+function getAnchorData(anchorName, returnList = false) {
+
+    const conditionFunc = anchor => {
+        return anchor.anchorName == anchorName;
+    };
+
+    if (returnList) {
+        return ANCHORS.filter(conditionFunc);
+    } else {
+        return ANCHORS.find(conditionFunc);
+    }
+
+}
+
+function scrollToAnchor(anchorName) {
+    const anchorData = getAnchorData(anchorName);
+    if (!anchorData) return;
+    scrollToAnchorExec(anchorData);
+}
+
+function goToAnchor(anchorName) {
+
+    if (!anchorName) return;
+
+    scrollToAnchor(anchorName);
+
+    // Do it another time when the full document has loaded
+    window.addEventListener('load', event => {
+        scrollToAnchor(anchorName);
+    });
+
+}
+
+
+const litDocsAnchorsStyles = litStyle(css`
+
+    h1 .headingAnchor:not([active]),
+    h2 .headingAnchor:not([active]),
+    h3 .headingAnchor:not([active]),
+    h4 .headingAnchor:not([active]),
+    h5 .headingAnchor:not([active]),
+    h6 .headingAnchor:not([active]) {
+        display: none;
+    }
+
+    h1:hover .headingAnchor,
+    h2:hover .headingAnchor,
+    h3:hover .headingAnchor,
+    h4:hover .headingAnchor,
+    h5:hover .headingAnchor,
+    h6:hover .headingAnchor {
+        display: inline-block;
+    }
+
+    .headingAnchor {
+        display: inline-block;
+        fill: rgb(115, 121, 126);
+        text-decoration: none;
+        height: 15px;
+    }
+
+    .headingAnchor svg {
+        height: 100%;
+    }
+
+`);
+
+
+const LitDocsAnchors = superclass => class extends litDocsAnchorsStyles(superclass) {
+
+    connectedCallback() {
+        super.connectedCallback();
+        this._addHashChangeListener();
+    }
+
+    disconnectedCallback() {
+        super.disconnectedCallback();
+        this._removeHashChangeListener();
+        this._removeAnchors();
+    }
+
+    firstUpdated() {
+        super.firstUpdated();
+        this._addAnchors();
+        this._renderAnchors();
+        this._loadInitialAnchor();
+    }
+
+    _addHashChangeListener() {
+        this.hashChangeCallback = event => {
+            goToAnchor(event.newURL.split('#')[1]);
+            this._renderAnchors();
+        };
+        window.addEventListener('hashchange', this.hashChangeCallback);
+    }
+
+    _removeHashChangeListener() {
+        window.removeEventListener('hashchange', this.hashChangeCallback);
+    }
+
+    _loadInitialAnchor() {
+        goToAnchor(window.location.hash.substr(1));
+    }
+
+    _addAnchors() {
+
+        this._addedAnchors = [];
+        const tagNames = ['h1', 'h2', 'h3', 'h4', 'h5', 'h6'];
+
+        for (const tagName of tagNames) {
+
+            const elements = this.shadowRoot.querySelectorAll(tagName);
+
+            for (const element of elements) {
+                this._addAnchor(element);
+            }
+
+        }
+
+    }
+
+    _removeAnchors() {
+        for (let addedAnchor of this._addedAnchors) {
+            const anchorIndex = ANCHORS.findIndex(anchor => {
+                return anchor.anchorName === addedAnchor.anchorName;
+            });
+            ANCHORS.splice(anchorIndex, 1);
+        }
+    }
+
+    _addAnchor(element) {
+
+        const elementText = element.textContent;
+        const anchorName = this._getAnchorName(elementText);
+
+        const anchorData = {
+            anchorName,
+            element,
+            elementText
+        };
+
+        ANCHORS.push(anchorData);
+
+        this._addedAnchors.push(anchorData);
+
+    }
+
+    _renderAnchors() {
+        for (let anchor of ANCHORS) {
+            this._renderAnchor(anchor);
+        }
+    }
+
+    _renderAnchor(anchor) {
+
+        const active = window.location.hash.substr(1) === anchor.anchorName;
+
+        const template = html`
+            <span>${anchor.elementText}</span>
+            <a
+                class="headingAnchor"
+                href=${window.location.pathname + '#' + anchor.anchorName}
+                ?active=${active}
+                @click=${() => goToAnchor(anchor.anchorName)}
+            >
+                ${this._anchorSvg}
+            </a>
+        `;
+
+        render(template, anchor.element);
+        anchor.element.id = anchor.anchorName;
+
+    }
+
+    _getAnchorName(elementText) {
+
+        const baseAnchorName = elementText.replace(/ /g, '-').replace(/[^\w-_\.]/gi, '').toLowerCase();
+        let anchorName = baseAnchorName;
+        let alreadyExistingAnchor = getAnchorData(anchorName);
+        let counter = 1;
+
+        while (alreadyExistingAnchor) {
+            counter++;
+            anchorName = baseAnchorName + '-' + counter;
+            alreadyExistingAnchor = getAnchorData(anchorName);
+        }
+
+        return anchorName;
+
+    }
+
+    get _anchorSvg() {
+
+        return html`
+            <svg role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+                <path d="M326.612 185.391c59.747 59.809 58.927 155.698.36 214.59-.11.12-.24.25-.36.37l-67.2 67.2c-59.27 59.27-155.699 59.262-214.96 0-59.27-59.26-59.27-155.7 0-214.96l37.106-37.106c9.84-9.84 26.786-3.3 27.294 10.606.648 17.722 3.826 35.527 9.69 52.721 1.986 5.822.567 12.262-3.783 16.612l-13.087 13.087c-28.026 28.026-28.905 73.66-1.155 101.96 28.024 28.579 74.086 28.749 102.325.51l67.2-67.19c28.191-28.191 28.073-73.757 0-101.83-3.701-3.694-7.429-6.564-10.341-8.569a16.037 16.037 0 0 1-6.947-12.606c-.396-10.567 3.348-21.456 11.698-29.806l21.054-21.055c5.521-5.521 14.182-6.199 20.584-1.731a152.482 152.482 0 0 1 20.522 17.197zM467.547 44.449c-59.261-59.262-155.69-59.27-214.96 0l-67.2 67.2c-.12.12-.25.25-.36.37-58.566 58.892-59.387 154.781.36 214.59a152.454 152.454 0 0 0 20.521 17.196c6.402 4.468 15.064 3.789 20.584-1.731l21.054-21.055c8.35-8.35 12.094-19.239 11.698-29.806a16.037 16.037 0 0 0-6.947-12.606c-2.912-2.005-6.64-4.875-10.341-8.569-28.073-28.073-28.191-73.639 0-101.83l67.2-67.19c28.239-28.239 74.3-28.069 102.325.51 27.75 28.3 26.872 73.934-1.155 101.96l-13.087 13.087c-4.35 4.35-5.769 10.79-3.783 16.612 5.864 17.194 9.042 34.999 9.69 52.721.509 13.906 17.454 20.446 27.294 10.606l37.106-37.106c59.271-59.259 59.271-155.699.001-214.959z"></path>
+            </svg>
+        `;
+
+    }
+
+};
+
+const LitDocsContent = superclass => class extends LitDocsAnchors(LitDocsStyle(superclass)) {};
+
+export { LitDocsAnchors, LitDocsContent, LitDocsStyle, goToAnchor, litDocsUiState };

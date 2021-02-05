@@ -1,6 +1,3 @@
-// import { LitElement } from 'lit-element';
-
-
 const observeState = superclass => class extends superclass {
 
     constructor() {
@@ -43,12 +40,7 @@ const observeState = superclass => class extends superclass {
 };
 
 
-// export const LitStateElement = observeState(LitElement);
-
-
 class LitState {
-
-    static stateVars = {};
 
     constructor() {
         this._observers = [];
@@ -64,26 +56,31 @@ class LitState {
     }
 
     _initStateVars() {
-        for (let [name, options] of Object.entries(this.constructor.stateVars)) {
-            this._initStateVar(name, options);
+        if (!this.constructor.stateVars) return;
+        for (let [key, options] of Object.entries(this.constructor.stateVars)) {
+            this._initStateVar(key, options);
         }
     }
 
-    _initStateVar(name, options) {
+    _initStateVar(key, options) {
 
         if (!options.handler) {
             options.handler = StateVar;
         }
 
+        if (options.element.kind === 'method') {
+            Object.assign(options, options.element.descriptor.value.call(this));
+        }
+
         const stateVar = new options.handler({
             options: options,
-            recordRead: () => this._recordRead(name),
-            notifyChange: () => this._notifyChange(name)
+            recordRead: () => this._recordRead(key),
+            notifyChange: () => this._notifyChange(key)
         });
 
         Object.defineProperty(
             this,
-            name,
+            key,
             {
                 get() {
                     return stateVar.get();
@@ -144,6 +141,34 @@ class StateVar {
 }
 
 
+function stateVar(options = {}) {
+
+    return element => {
+
+        return {
+            kind: 'field',
+            key: Symbol(),
+            placement: 'own',
+            descriptor: {},
+            initializer() {
+                if (typeof element.initializer === 'function') {
+                    this[element.key] = element.initializer.call(this);
+                }
+            },
+            finisher(litStateClass) {
+                options.element = element;
+                if (litStateClass.stateVars === undefined) {
+                    litStateClass.stateVars = {};
+                }
+                litStateClass.stateVars[element.key] = options;
+            }
+        };
+
+    };
+
+}
+
+
 class StateRecorder {
 
     constructor() {
@@ -171,4 +196,4 @@ class StateRecorder {
 
 const stateRecorder = new StateRecorder();
 
-export { LitState, StateVar, observeState };
+export { LitState, StateVar, observeState, stateVar };

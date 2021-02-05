@@ -74,10 +74,13 @@ import { asyncStateVar } from 'lit-state-async-state-var';
 
 class DemoState extends LitState {
 
-    data = asyncStateVar({
-        set: value => this._setData(value),
-        initialValue: "[initial value]"
-    });
+    @asyncStateVar()
+    data() {
+        return {
+            set: value => this._setData(value),
+            initialValue: "[initial value]"
+        };
+    }
 
     _setData(value) {
         return new Promise((resolve, reject) => {
