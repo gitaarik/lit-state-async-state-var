@@ -8,7 +8,7 @@
   },
   "dependencies": {
     "highlight.js": "^10.4.0",
-    "lit-docs": "0.0.13",
+    "lit-docs": "0.0.16",
     "lit-element": "^2.3.1",
     "lit-element-demo-app-helpers": "0.0.4",
     "lit-element-state": "^1.5.0",
