@@ -32,8 +32,8 @@ function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
 
 import { customElement, LitElement, property, html, css } from '../../web_modules/lit-element.js';
 import { LitDocsContent } from '../../web_modules/lit-docs.js';
-import './async-component-1.js';
-import './async-component-2.js';
+import './basic-component-1.js';
+import './basic-component-2.js';
 export let BasicUsage = _decorate([customElement('basic-usage')], function (_initialize, _LitDocsContent) {
   class BasicUsage extends _LitDocsContent {
     constructor(...args) {
@@ -54,51 +54,59 @@ export let BasicUsage = _decorate([customElement('basic-usage')], function (_ini
 
             <div>
 
-                <h1>Basic usage</h1>
+                <h1>LitState asyncStateVar</h1>
 
                 <p>
                     To make it easy to work with asynchronous data in LitState,
-                    there's the <code>asyncStateVar</code>. It's a special kind
+                    you can use the <code>asyncStateVar</code>. It's a special kind
                     of <code>stateVar</code> on which you can define a
                     <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise" target="_blank">promise</a>.
-                    This promise will asynchronously retrieve some data. It's
-                    automatically executed when the <code>asyncStateVar</code>
-                    is being used in a component. When the promise settles, it
-                    will re-render the component. The component can access the
-                    status of the promise, and render according to that.
+                    This promise will do some asynchronous task. When the
+                    status of the promise changes (it becomes resolved or
+                    rejected), your component will be re-rendered. And in your
+                    component you can access the status and the resolved value
+                    of the promise.
+                </p>
+
+                <p>
+                    Like this, you don't have to keep track of the status of
+                    your promises yourself. You don't need extra
+                    <code>stateVar</code> variables that you manually update
+                    when your promises get resolved or rejected. It saves a lot
+                    of manual work and potential bugs
                 </p>
 
                 <h2>Demo</h2>
 
+                <p>
+                    The demo components underneath automatically start to load
+                    it's data using the promise specified on the state
+                    (explained later in the code below). Try to refresh the
+                    page and check the status and value. You can also reload
+                    the value with the "reload" button. The value that the
+                    promise returns includes the current time. Every time the
+                    promise resolves, you'll see the time is updated.
+                </p>
+
                 <div class="demoComponents">
-                    <async-component-1></async-component-1>
-                    <async-component-2></async-component-2>
+                    <basic-component-1></basic-component-1>
+                    <basic-component-2></basic-component-2>
                 </div>
 
                 <h2>Explanation</h2>
 
                 <p>
-                    Our <code>demoState</code> has a simple fake
-                    API for demonstation purposes. The fake API simulates a
-                    succesful response (which includes the current time), or an
-                    unsuccesful response (with an error message) in case
-                    <code>_simulateError</code> is
-                    <code>true</code>.
+                    To define the <code>asyncStateVar</code>, we decorate a
+                    method which returns an object that controls the behavior.
+                    We decorate a method, and not a instance variable, because
+                    in a method we have access to the instance's
+                    <code>this</code> object. We use this to access the
+                    <code>_getData()</code> method, which returns the promise.
                 </p>
-                    
+
                 <p>
-                    We use the <code>asyncStateVar()</code> decorator to decorate
-                    a method. This method returns an object containing data
-                    about the asyncStateVar. It contains the initial value and
-                    a function that returns the promise for <strong>retrieving
-                    the data</strong>. In this case <code>_getData()</code>.
-                </p>
-                    
-                <p>
-                    The <code>asyncStateVar()</code> decorator decorates a
-                    method, and not a instance variable, because in a method we
-                    have access to the instance's <code>this</code> reference.
-                    We need this to return the getter method.
+                    The promise in this example automatically resolves after 3
+                    seconds, using a simple <code>setTimeout()</code>.
                 </p>
 
                 <p>
@@ -106,49 +114,23 @@ export let BasicUsage = _decorate([customElement('basic-usage')], function (_ini
                 </p>
 
                 <p>
-                    When the fake API simulates a succesful response, it calls
-                    the promise's <code>resolve()</code> callback,
-                    with the value that needs to be set. When the fake API gets
-                    an error, it calls the promise's
-                    <code>reject()</code> callback, with the error
-                    message.
+                    The components use <code>demoState.data</code> to get the
+                    value. This initially returns the (optional)
+                    <code>initialValue</code> if it's set, or otherwise
+                    <code>undefined</code>. When the promise resolves, it calls
+                    the <code>resolve(value)</code> callback with the new
+                    value. Then <code>demoState.data</code> will contain this
+                    new value and the components will be re-rendered.
                 </p>
 
                 <p>
-                    The components use
-                    <code>demoState.data</code> to get
-                    the current value. This initially returns the (optional)
-                    initial value, or <code>undefined</code> if
-                    there's no initial value set. When the promise resolves or
-                    fails, the components will be re-rendered, and
-                    <code>demoState.data</code> will return the new
-                    value.
-                </p>
-                
-                <p>
-                    The components use
-                    <code>isPending()</code>,
-                    <code>isRejected()</code> and
-                    <code>isFulfilled()</code> to check the status
-                    of the promise. If the promise has been rejected, the error
-                    value passed to the <code>reject()</code>
-                    callback can be accessed with
-                    <code>getError()</code>.
+                    The components use <code>isPending()</code> and
+                    <code>isFulfilled()</code> to check the status of the
+                    promise.
                 </p>
 
                 <p>
                     <code-block filename='component-1.js' .code=${this.componentCode}></code-block>
-                </p>
-
-                <p>
-                    Like this, you can easily synchronize your UI with the
-                    state of your asynchronous data on your page. You don't
-                    have to create additional state variables to do this.
-                </p>
-
-                <p>
-                    <code>asyncStateVar</code> can also handle updates. See
-                    <a href="#update">asyncStateVar update</a>.
                 </p>
 
             </div>
@@ -169,41 +151,17 @@ class DemoState extends LitState {
     @asyncStateVar()
     data() {
         return {
-            initialValue: '[initial value]',
+            initialValue: '[initial value]', // optional
             get: () => this._getData()
         };
     }
 
-    _simulateError = false;
-
     _getData() {
-
         return new Promise((resolve, reject) => {
-
             setTimeout(() => {
-
-                if (this._simulateError) {
-                    reject("fake load data error");
-                    this._simulateError = false;
-                } else {
-                    resolve(this._fakeApiResponse());
-                }
-
+                resolve("Hello world (" + currentTime() + ")");
             }, 3000);
-
         });
-
-    }
-
-    _fakeApiResponseText = "Hello world";
-
-    _fakeApiResponse() {
-        return this._fakeApiResponseText + " (" + currentTime() + ")";
-    }
-
-    simulateError() {
-        this._simulateError = true;
-        this.data.reload();
     }
 
 }
@@ -220,8 +178,8 @@ import { observeState } from 'lit-element-state';
 import { demoState } from './demo-state.js';
 
 
-@customElement('async-component-1')
-export class AsyncComponent1 extends observeState(LitElement) {
+@customElement('component-1')
+export class Component1 extends observeState(LitElement) {
 
     render() {
 
@@ -239,13 +197,6 @@ export class AsyncComponent1 extends observeState(LitElement) {
                 reload data
             </button>
 
-            <button
-                @click=\${() => demoState.simulateError()}
-                ?disabled=\${demoState.data.isPending()}
-            >
-                simulate error
-            </button>
-
         \`;
 
     }
@@ -253,11 +204,6 @@ export class AsyncComponent1 extends observeState(LitElement) {
     get dataStatus() {
         if (demoState.data.isPending()) {
             return 'loading value...';
-        } else if (demoState.data.isRejected()) {
-            return (
-                'loading failed with error: ' +
-                '"' + demoState.data.getError() + '"'
-            );
         } else if (demoState.data.isFulfilled()) {
             return 'value loaded';
         } else {

@@ -33,6 +33,9 @@ function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
 import { customElement, LitElement, property, html, css } from '../web_modules/lit-element.js';
 import '../web_modules/lit-docs.js';
 import './basic-usage/index.js';
+import './promises-that-reject/index.js';
+import './objects-as-values/index.js';
+import './arrays-as-values/index.js';
 import './update-usage/index.js';
 import './update-delayed-push/index.js';
 import './update-only/index.js';
@@ -62,19 +65,33 @@ export let LitStateAsyncStateVarDemo = _decorate([customElement('lit-state-async
         return [{
           title: 'Basic usage',
           path: 'basic-usage',
-          template: html`<basic-usage></basic-usage>`
+          template: html`<basic-usage></basic-usage>`,
+          submenu: [{
+            title: "Promises that reject",
+            path: 'promises-that-reject',
+            template: html`<promises-that-reject></promises-that-reject>`
+          }, {
+            title: "Objects as values",
+            path: 'objects-as-values',
+            template: html`<objects-as-values></objects-as-values>`
+          }, {
+            title: "Arrays as values",
+            path: 'arrays-as-values',
+            template: html`<arrays-as-values></arrays-as-values>`
+          }]
         }, {
-          title: 'Update',
+          title: 'Update promise',
           path: 'update',
-          template: html`<update-usage></update-usage>`
-        }, {
-          title: 'Update with delayed push',
-          path: 'update-delayed-push',
-          template: html`<update-delayed-push></update-delayed-push>`
-        }, {
-          title: 'Update only',
-          path: 'update-only',
-          template: html`<update-only></update-only>`
+          template: html`<update-usage></update-usage>`,
+          submenu: [{
+            title: 'Delayed push',
+            path: 'delayed-push',
+            template: html`<update-delayed-push></update-delayed-push>`
+          }, {
+            title: 'Update only',
+            path: 'update-only',
+            template: html`<update-only></update-only>`
+          }]
         }, {
           title: 'Actions',
           path: 'actions',

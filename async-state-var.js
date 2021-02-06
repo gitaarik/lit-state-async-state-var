@@ -3,7 +3,7 @@ import { StateVar, stateVar } from 'lit-element-state';
 
 class AsyncStateVarHandler extends StateVar {
 
-    // These methods are proxied to the `stateObj`. They are public API
+    // These methods are proxied to the `stateObject`. They are public API
     // functions for the developer.
     proxyMethods = [
         'valueOf', 'getValue', 'isPending', 'isPendingGet', 'isPendingSet',
@@ -58,24 +58,25 @@ class AsyncStateVarHandler extends StateVar {
     }
 
     get _stateObj() {
-        // Creates and returns a `stateObject`. This object is a clone from the
+        // Creates and returns a `stateObject`. This object is a clone of the
         // object that is set in the current value of the `asyncStateVar`. Then
-        // it adds the `this.proxyMethods` to it's properties. Giving the user
-        // access to the object and the state at the same time.
+        // the `this.proxyMethods` are added to it's properties. Giving the
+        // developer access to both the object and the state on the
+        // `asyncStateVar`.
         //
         // The original object can always be recovered with the `getValue()`
         // proxy method.
 
-        const stateObj = Object.create(this.getValue());
-        stateObj.__asyncStateVarHandler = this;
+        const stateObject = Object.create(this.getValue());
+        stateObject.__asyncStateVarHandler = this;
 
         for (let method of this.proxyMethods) {
-            stateObj[method] = function() {
+            stateObject[method] = function() {
                 return this.__asyncStateVarHandler[method](arguments);
             }
         }
 
-        return stateObj;
+        return stateObject;
 
     }
 

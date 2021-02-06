@@ -123,9 +123,12 @@ import { asyncStateVar } from 'lit-state-async-state-var';
 
 class DemoState extends LitState {
 
-    sendMail = asyncStateVar({
-        set: text => this._sendEmail(text)
-    });
+    @asyncStateVar()
+    sendMail() {
+        return {
+            set: text => this._sendEmail(text)
+        };
+    }
 
     _sendEmail(text) {
         return new Promise((resolve, reject) => {

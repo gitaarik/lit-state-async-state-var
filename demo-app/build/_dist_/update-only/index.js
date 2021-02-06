@@ -54,7 +54,7 @@ export let UpdateOnly = _decorate([customElement('update-only')], function (_ini
 
             <div>
 
-                <h1>LitState <code>asyncStateVar</code> update only demo</h1>
+                <h1>Update only</h1>
 
                 <p>
                     You might have any data that doesn't need to be
@@ -115,10 +115,13 @@ import { asyncStateVar } from 'lit-state-async-state-var';
 
 class DemoState extends LitState {
 
-    data = asyncStateVar({
-        set: value => this._setData(value),
-        initialValue: "[initial value]"
-    });
+    @asyncStateVar()
+    data() {
+        return {
+            set: value => this._setData(value),
+            initialValue: "[initial value]"
+        };
+    }
 
     _setData(value) {
         return new Promise((resolve, reject) => {

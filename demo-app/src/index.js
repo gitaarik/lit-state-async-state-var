@@ -2,6 +2,8 @@ import { customElement, LitElement, property, html, css } from 'lit-element';
 import 'lit-docs';
 import './basic-usage/index';
 import './promises-that-reject/index';
+import './objects-as-values/index';
+import './arrays-as-values/index';
 import './update-usage/index';
 import './update-delayed-push/index';
 import './update-only/index';
@@ -26,6 +28,16 @@ export class LitStateAsyncStateVarDemo extends LitElement {
                         title: "Promises that reject",
                         path: 'promises-that-reject',
                         template: html`<promises-that-reject></promises-that-reject>`
+                    },
+                    {
+                        title: "Objects as values",
+                        path: 'objects-as-values',
+                        template: html`<objects-as-values></objects-as-values>`
+                    },
+                    {
+                        title: "Arrays as values",
+                        path: 'arrays-as-values',
+                        template: html`<arrays-as-values></arrays-as-values>`
                     }
                 ]
             },

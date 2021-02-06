@@ -57,48 +57,14 @@ let DemoState = _decorate(null, function (_initialize, _LitState) {
         };
       }
     }, {
-      kind: "field",
-      key: "_simulateError",
-
-      value() {
-        return false;
-      }
-
-    }, {
       kind: "method",
       key: "_getData",
       value: function _getData() {
         return new Promise((resolve, reject) => {
           setTimeout(() => {
-            if (this._simulateError) {
-              reject("fake load data error");
-              this._simulateError = false;
-            } else {
-              resolve(this._fakeApiResponse());
-            }
+            resolve("Hello world (" + currentTime() + ")");
           }, 3000);
         });
-      }
-    }, {
-      kind: "field",
-      key: "_fakeApiResponseText",
-
-      value() {
-        return "Hello world";
-      }
-
-    }, {
-      kind: "method",
-      key: "_fakeApiResponse",
-      value: function _fakeApiResponse() {
-        return this._fakeApiResponseText + " (" + currentTime() + ")";
-      }
-    }, {
-      kind: "method",
-      key: "simulateErrorReload",
-      value: function simulateErrorReload() {
-        this._simulateError = true;
-        this.data.reload();
       }
     }]
   };

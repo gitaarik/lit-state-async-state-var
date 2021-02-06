@@ -54,7 +54,7 @@ export let UpdateDelayedPush = _decorate([customElement('update-delayed-push')],
 
             <div>
 
-                <h1>LitState <code>asyncStateVar</code> delayed update</h1>
+                <h1>Delayed update</h1>
 
                 <p>
                     Sometimes you want to update your UI first before you send
@@ -132,11 +132,14 @@ import { asyncStateVar } from 'lit-state-async-state-var';
 
 class DemoState extends LitState {
 
-    data = asyncStateVar({
-        get: () => this._getData(),
-        set: value => this._setData(value),
-        initialValue: "[initial value]"
-    });
+    @asyncStateVar()
+    data() {
+        return {
+            get: () => this._getData(),
+            set: value => this._setData(value),
+            initialValue: "[initial value]"
+        };
+    }
 
     _getData() {
         return new Promise((resolve, reject) => {

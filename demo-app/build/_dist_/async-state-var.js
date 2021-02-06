@@ -1,8 +1,14 @@
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
 import { StateVar, stateVar } from '../web_modules/lit-element-state.js';
 
 class AsyncStateVarHandler extends StateVar {
+  // These methods are proxied to the `stateObject`. They are public API
+  // functions for the developer.
   constructor(args) {
     super(args);
+
+    _defineProperty(this, "proxyMethods", ['valueOf', 'getValue', 'isPending', 'isPendingGet', 'isPendingSet', 'isPendingChange', 'isRejected', 'isRejectedGet', 'isRejectedSet', 'getError', 'getErrorGet', 'getErrorSet', 'isFulfilled', 'isFulfilledGet', 'isFulfilledSet', 'hasChange', 'reset', 'restore', 'push', 'reload']);
 
     this._init();
   }
@@ -36,9 +42,34 @@ class AsyncStateVarHandler extends StateVar {
   }
 
   get() {
-    this._initGet();
+    this._initFirstGet();
 
-    return new AsyncStateVarObj(this);
+    if (typeof this.getValue() === 'object') {
+      return this._stateObj;
+    } else {
+      return this;
+    }
+  }
+
+  get _stateObj() {
+    // Creates and returns a `stateObject`. This object is a clone of the
+    // object that is set in the current value of the `asyncStateVar`. Then
+    // the `this.proxyMethods` are added to it's properties. Giving the
+    // developer access to both the object and the state on the
+    // `asyncStateVar`.
+    //
+    // The original object can always be recovered with the `getValue()`
+    // proxy method.
+    const stateObject = Object.create(this.getValue());
+    stateObject.__asyncStateVarHandler = this;
+
+    for (let method of this.proxyMethods) {
+      stateObject[method] = function () {
+        return this.__asyncStateVarHandler[method](arguments);
+      };
+    }
+
+    return stateObject;
   }
 
   set(value) {
@@ -55,12 +86,14 @@ class AsyncStateVarHandler extends StateVar {
     this._notifyChange();
   }
 
-  _initGet() {
-    if (!this._hasOption('get') || this._initiatedGet) return;
+  _initFirstGet() {
+    if (!this._hasOption('get') || this._initiatedGet) {
+      return;
+    }
+
     this._initiatedGet = true;
     this._pendingGet = true;
     this._rejectedGet = false;
-    this._fulfilledGet = false;
     this._fulfilledGet = false;
 
     this._loadValue();
@@ -222,109 +255,6 @@ class AsyncStateVarHandler extends StateVar {
     this._notifyChange();
 
     this._loadValue();
-  }
-
-}
-
-class AsyncStateVarObj {
-  constructor(asyncStateVarHandler) {
-    this.__asyncStateVarHandler = asyncStateVarHandler;
-
-    if (typeof this.getValue() === 'object') {
-      // When the value is an object, set the properties of that object
-      // on this class, so that those properties are easily accessible by
-      // doing `stateObj.stateVar.propertyName`. If the object also
-      // contains methods the user needs to access, one should use
-      // `stateObj.stateVar.getValue().methodName()`. `getValue()`
-      // returns the original value. Without `getValue()`, you'll get
-      // this object, which contains the helper methods like
-      // `isPending()` and `isFulfilled()` etc.
-      Object.assign(this, this.getValue());
-    }
-  }
-
-  [Symbol.toPrimitive](hint) {
-    return this.getValue();
-  }
-
-  valueOf() {
-    return this.getValue();
-  }
-
-  getValue() {
-    return this.__asyncStateVarHandler.getValue();
-  }
-
-  isPending() {
-    return this.isPendingGet() || this.isPendingSet();
-  }
-
-  isPendingGet() {
-    return this.__asyncStateVarHandler.isPendingGet();
-  }
-
-  isPendingSet() {
-    return this.__asyncStateVarHandler.isPendingSet();
-  }
-
-  isPendingChange() {
-    return this.__asyncStateVarHandler.isPendingChange();
-  }
-
-  isRejected() {
-    return this.__asyncStateVarHandler.isRejected();
-  }
-
-  isRejectedGet() {
-    return this.__asyncStateVarHandler.isRejectedGet();
-  }
-
-  isRejectedSet() {
-    return this.__asyncStateVarHandler.isRejectedSet();
-  }
-
-  getError() {
-    return this.__asyncStateVarHandler.getError();
-  }
-
-  getErrorGet() {
-    return this.__asyncStateVarHandler.getErrorGet();
-  }
-
-  getErrorSet() {
-    return this.__asyncStateVarHandler.getErrorSet();
-  }
-
-  isFulfilled() {
-    return this.__asyncStateVarHandler.isFulfilled();
-  }
-
-  isFulfilledGet() {
-    return this.__asyncStateVarHandler.isFulfilledGet();
-  }
-
-  isFulfilledSet() {
-    return this.__asyncStateVarHandler.isFulfilledSet();
-  }
-
-  hasChange() {
-    return this.__asyncStateVarHandler.hasChange();
-  }
-
-  reset() {
-    return this.__asyncStateVarHandler.reset();
-  }
-
-  restore() {
-    return this.__asyncStateVarHandler.restore();
-  }
-
-  push(value = undefined) {
-    return this.__asyncStateVarHandler.push(value);
-  }
-
-  reload() {
-    return this.__asyncStateVarHandler.reload();
   }
 
 }
