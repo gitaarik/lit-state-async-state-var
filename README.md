@@ -18,9 +18,12 @@ import { asyncStateVar } from 'lit-state-async-state-var';
 
 class MyState extends LitState {
 
-    myAsyncStateVar = asyncStateVar({
-        get: () => this._getData()
-    });
+    @asyncStateVar()
+    myData() {
+        return {
+            get: () => this._getData()
+        }
+    };
 
     _getData() {
 
@@ -50,12 +53,10 @@ uncommon that this data is used in multiple components; a shared state.
 Therefore `asyncStateVar` is a special kind of `stateVar` that provides a
 convenient way of dealing with asynchronous data.
 
-The `asyncStateVar()` function takes as its first argument a function that
-returns a promise. When the variable is used in a component, the promise will
-automatically be executed. When it is resolved or rejected, the component that
-uses the variable will automatically re-render.
-
-Here is a state class with an `asyncStateVar`:
+When using the `asyncStateVar()`, you decorate a method instead of a variable.
+From within a method you can access `this`. We'll use this to call
+`this._getData()` to return the promise that gets our data. We return this in
+an object containing a `get` key:
 
 ```javascript
 import { LitState } from 'lit-element-state';
@@ -63,9 +64,12 @@ import { asyncStateVar } from 'lit-state-async-state-var';
 
 class MyState extends LitState {
 
-    myData = asyncStateVar({
-        get: () => this._getData()
-    });
+    @asyncStateVar()
+    myData() {
+        return {
+            get: () => this._getData()
+        };
+    }
 
     _getData() {
 
@@ -129,11 +133,14 @@ import { asyncStateVar } from 'lit-state-async-state-var';
 
 class MyState extends LitState {
 
-    myData = asyncStateVar({
-        get: () => this._getData(),
-        set: value => this._setData(value),
-        initialValue: 'initial value' // optional
-    });
+    @asyncStateVar()
+    myData() {
+        return {
+            get: () => this._getData(),
+            set: value => this._setData(value),
+            initialValue: 'initial value' // optional
+        }
+    }
 
     _getData() {
 
