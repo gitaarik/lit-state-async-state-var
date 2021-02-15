@@ -1,4 +1,5 @@
 import { L as LitElement, h as html, c as css, r as render } from './common/lit-element-6b065c14.js';
+import { l as litStyle } from './common/lit-style-71574fc9.js';
 
 function deepFreeze(obj) {
     if (obj instanceof Map) {
@@ -81,155 +82,6 @@ function inherit(original, ...objects) {
   });
   return /** @type {T} */ (result);
 }
-
-/* Stream merging */
-
-/**
- * @typedef Event
- * @property {'start'|'stop'} event
- * @property {number} offset
- * @property {Node} node
- */
-
-/**
- * @param {Node} node
- */
-function tag(node) {
-  return node.nodeName.toLowerCase();
-}
-
-/**
- * @param {Node} node
- */
-function nodeStream(node) {
-  /** @type Event[] */
-  const result = [];
-  (function _nodeStream(node, offset) {
-    for (let child = node.firstChild; child; child = child.nextSibling) {
-      if (child.nodeType === 3) {
-        offset += child.nodeValue.length;
-      } else if (child.nodeType === 1) {
-        result.push({
-          event: 'start',
-          offset: offset,
-          node: child
-        });
-        offset = _nodeStream(child, offset);
-        // Prevent void elements from having an end tag that would actually
-        // double them in the output. There are more void elements in HTML
-        // but we list only those realistically expected in code display.
-        if (!tag(child).match(/br|hr|img|input/)) {
-          result.push({
-            event: 'stop',
-            offset: offset,
-            node: child
-          });
-        }
-      }
-    }
-    return offset;
-  })(node, 0);
-  return result;
-}
-
-/**
- * @param {any} original - the original stream
- * @param {any} highlighted - stream of the highlighted source
- * @param {string} value - the original source itself
- */
-function mergeStreams(original, highlighted, value) {
-  let processed = 0;
-  let result = '';
-  const nodeStack = [];
-
-  function selectStream() {
-    if (!original.length || !highlighted.length) {
-      return original.length ? original : highlighted;
-    }
-    if (original[0].offset !== highlighted[0].offset) {
-      return (original[0].offset < highlighted[0].offset) ? original : highlighted;
-    }
-
-    /*
-    To avoid starting the stream just before it should stop the order is
-    ensured that original always starts first and closes last:
-
-    if (event1 == 'start' && event2 == 'start')
-      return original;
-    if (event1 == 'start' && event2 == 'stop')
-      return highlighted;
-    if (event1 == 'stop' && event2 == 'start')
-      return original;
-    if (event1 == 'stop' && event2 == 'stop')
-      return highlighted;
-
-    ... which is collapsed to:
-    */
-    return highlighted[0].event === 'start' ? original : highlighted;
-  }
-
-  /**
-   * @param {Node} node
-   */
-  function open(node) {
-    /** @param {Attr} attr */
-    function attributeString(attr) {
-      return ' ' + attr.nodeName + '="' + escapeHTML(attr.value) + '"';
-    }
-    // @ts-ignore
-    result += '<' + tag(node) + [].map.call(node.attributes, attributeString).join('') + '>';
-  }
-
-  /**
-   * @param {Node} node
-   */
-  function close(node) {
-    result += '</' + tag(node) + '>';
-  }
-
-  /**
-   * @param {Event} event
-   */
-  function render(event) {
-    (event.event === 'start' ? open : close)(event.node);
-  }
-
-  while (original.length || highlighted.length) {
-    let stream = selectStream();
-    result += escapeHTML(value.substring(processed, stream[0].offset));
-    processed = stream[0].offset;
-    if (stream === original) {
-      /*
-      On any opening or closing tag of the original markup we first close
-      the entire highlighted node stack, then render the original tag along
-      with all the following original tags at the same offset and then
-      reopen all the tags on the highlighted stack.
-      */
-      nodeStack.reverse().forEach(close);
-      do {
-        render(stream.splice(0, 1)[0]);
-        stream = selectStream();
-      } while (stream === original && stream.length && stream[0].offset === processed);
-      nodeStack.reverse().forEach(open);
-    } else {
-      if (stream[0].event === 'start') {
-        nodeStack.push(stream[0].node);
-      } else {
-        nodeStack.pop();
-      }
-      render(stream.splice(0, 1)[0]);
-    }
-  }
-  return result + escapeHTML(value.substr(processed));
-}
-
-var utils = /*#__PURE__*/Object.freeze({
-    __proto__: null,
-    escapeHTML: escapeHTML,
-    inherit: inherit,
-    nodeStream: nodeStream,
-    mergeStreams: mergeStreams
-});
 
 /**
  * @typedef {object} Renderer
@@ -509,6 +361,18 @@ function concat(...args) {
 }
 
 /**
+ * Any of the passed expresssions may match
+ *
+ * Creates a huge this | this | that | that match
+ * @param {(RegExp | string)[] } args
+ * @returns {string}
+ */
+function either(...args) {
+  const joined = '(' + args.map((x) => source(x)).join("|") + ")";
+  return joined;
+}
+
+/**
  * @param {RegExp} re
  * @returns {number}
  */
@@ -579,6 +443,7 @@ function join(regexps, separator = "|") {
 }
 
 // Common regexps
+const MATCH_NOTHING_RE = /\b\B/;
 const IDENT_RE = '[a-zA-Z]\\w*';
 const UNDERSCORE_IDENT_RE = '[a-zA-Z_]\\w*';
 const NUMBER_RE = '\\b\\d+(\\.\\d+)?';
@@ -747,6 +612,7 @@ const END_SAME_AS_BEGIN = function(mode) {
 
 var MODES = /*#__PURE__*/Object.freeze({
     __proto__: null,
+    MATCH_NOTHING_RE: MATCH_NOTHING_RE,
     IDENT_RE: IDENT_RE,
     UNDERSCORE_IDENT_RE: UNDERSCORE_IDENT_RE,
     NUMBER_RE: NUMBER_RE,
@@ -773,6 +639,93 @@ var MODES = /*#__PURE__*/Object.freeze({
     END_SAME_AS_BEGIN: END_SAME_AS_BEGIN
 });
 
+// Grammar extensions / plugins
+// See: https://github.com/highlightjs/highlight.js/issues/2833
+
+// Grammar extensions allow "syntactic sugar" to be added to the grammar modes
+// without requiring any underlying changes to the compiler internals.
+
+// `compileMatch` being the perfect small example of now allowing a grammar
+// author to write `match` when they desire to match a single expression rather
+// than being forced to use `begin`.  The extension then just moves `match` into
+// `begin` when it runs.  Ie, no features have been added, but we've just made
+// the experience of writing (and reading grammars) a little bit nicer.
+
+// ------
+
+// TODO: We need negative look-behind support to do this properly
+/**
+ * Skip a match if it has a preceding dot
+ *
+ * This is used for `beginKeywords` to prevent matching expressions such as
+ * `bob.keyword.do()`. The mode compiler automatically wires this up as a
+ * special _internal_ 'on:begin' callback for modes with `beginKeywords`
+ * @param {RegExpMatchArray} match
+ * @param {CallbackResponse} response
+ */
+function skipIfhasPrecedingDot(match, response) {
+  const before = match.input[match.index - 1];
+  if (before === ".") {
+    response.ignoreMatch();
+  }
+}
+
+
+/**
+ * `beginKeywords` syntactic sugar
+ * @type {CompilerExt}
+ */
+function beginKeywords(mode, parent) {
+  if (!parent) return;
+  if (!mode.beginKeywords) return;
+
+  // for languages with keywords that include non-word characters checking for
+  // a word boundary is not sufficient, so instead we check for a word boundary
+  // or whitespace - this does no harm in any case since our keyword engine
+  // doesn't allow spaces in keywords anyways and we still check for the boundary
+  // first
+  mode.begin = '\\b(' + mode.beginKeywords.split(' ').join('|') + ')(?!\\.)(?=\\b|\\s)';
+  mode.__beforeBegin = skipIfhasPrecedingDot;
+  mode.keywords = mode.keywords || mode.beginKeywords;
+  delete mode.beginKeywords;
+
+  // prevents double relevance, the keywords themselves provide
+  // relevance, the mode doesn't need to double it
+  // eslint-disable-next-line no-undefined
+  if (mode.relevance === undefined) mode.relevance = 0;
+}
+
+/**
+ * Allow `illegal` to contain an array of illegal values
+ * @type {CompilerExt}
+ */
+function compileIllegal(mode, _parent) {
+  if (!Array.isArray(mode.illegal)) return;
+
+  mode.illegal = either(...mode.illegal);
+}
+
+/**
+ * `match` to match a single expression for readability
+ * @type {CompilerExt}
+ */
+function compileMatch(mode, _parent) {
+  if (!mode.match) return;
+  if (mode.begin || mode.end) throw new Error("begin & end are not supported with match");
+
+  mode.begin = mode.match;
+  delete mode.match;
+}
+
+/**
+ * provides the default 1 relevance to all modes
+ * @type {CompilerExt}
+ */
+function compileRelevance(mode, _parent) {
+  // eslint-disable-next-line no-undefined
+  if (mode.relevance === undefined) mode.relevance = 1;
+}
+
 // keywords that should have no default relevance value
 const COMMON_KEYWORDS = [
   'of',
@@ -788,6 +741,82 @@ const COMMON_KEYWORDS = [
   'value' // common variable name
 ];
 
+const DEFAULT_KEYWORD_CLASSNAME = "keyword";
+
+/**
+ * Given raw keywords from a language definition, compile them.
+ *
+ * @param {string | Record<string,string|string[]> | Array<string>} rawKeywords
+ * @param {boolean} caseInsensitive
+ */
+function compileKeywords(rawKeywords, caseInsensitive, className = DEFAULT_KEYWORD_CLASSNAME) {
+  /** @type KeywordDict */
+  const compiledKeywords = {};
+
+  // input can be a string of keywords, an array of keywords, or a object with
+  // named keys representing className (which can then point to a string or array)
+  if (typeof rawKeywords === 'string') {
+    compileList(className, rawKeywords.split(" "));
+  } else if (Array.isArray(rawKeywords)) {
+    compileList(className, rawKeywords);
+  } else {
+    Object.keys(rawKeywords).forEach(function(className) {
+      // collapse all our objects back into the parent object
+      Object.assign(
+        compiledKeywords,
+        compileKeywords(rawKeywords[className], caseInsensitive, className)
+      );
+    });
+  }
+  return compiledKeywords;
+
+  // ---
+
+  /**
+   * Compiles an individual list of keywords
+   *
+   * Ex: "for if when while|5"
+   *
+   * @param {string} className
+   * @param {Array<string>} keywordList
+   */
+  function compileList(className, keywordList) {
+    if (caseInsensitive) {
+      keywordList = keywordList.map(x => x.toLowerCase());
+    }
+    keywordList.forEach(function(keyword) {
+      const pair = keyword.split('|');
+      compiledKeywords[pair[0]] = [className, scoreForKeyword(pair[0], pair[1])];
+    });
+  }
+}
+
+/**
+ * Returns the proper score for a given keyword
+ *
+ * Also takes into account comment keywords, which will be scored 0 UNLESS
+ * another score has been manually assigned.
+ * @param {string} keyword
+ * @param {string} [providedScore]
+ */
+function scoreForKeyword(keyword, providedScore) {
+  // manual scores always win over common keywords
+  // so you can force a score of 1 if you really insist
+  if (providedScore) {
+    return Number(providedScore);
+  }
+
+  return commonKeyword(keyword) ? 0 : 1;
+}
+
+/**
+ * Determines if a given keyword is common or not
+ *
+ * @param {string} keyword */
+function commonKeyword(keyword) {
+  return COMMON_KEYWORDS.includes(keyword.toLowerCase());
+}
+
 // compilation
 
 /**
@@ -796,9 +825,10 @@ const COMMON_KEYWORDS = [
  * Given the raw result of a language definition (Language), compiles this so
  * that it is ready for highlighting code.
  * @param {Language} language
+ * @param {{plugins: HLJSPlugin[]}} opts
  * @returns {CompiledLanguage}
  */
-function compileLanguage(language) {
+function compileLanguage(language, { plugins }) {
   /**
    * Builds a regex with the case sensativility of the current language
    *
@@ -1009,31 +1039,14 @@ function compileLanguage(language) {
 
     mode.contains.forEach(term => mm.addRule(term.begin, { rule: term, type: "begin" }));
 
-    if (mode.terminator_end) {
-      mm.addRule(mode.terminator_end, { type: "end" });
+    if (mode.terminatorEnd) {
+      mm.addRule(mode.terminatorEnd, { type: "end" });
     }
     if (mode.illegal) {
       mm.addRule(mode.illegal, { type: "illegal" });
     }
 
     return mm;
-  }
-
-  // TODO: We need negative look-behind support to do this properly
-  /**
-   * Skip a match if it has a preceding dot
-   *
-   * This is used for `beginKeywords` to prevent matching expressions such as
-   * `bob.keyword.do()`. The mode compiler automatically wires this up as a
-   * special _internal_ 'on:begin' callback for modes with `beginKeywords`
-   * @param {RegExpMatchArray} match
-   * @param {CallbackResponse} response
-   */
-  function skipIfhasPrecedingDot(match, response) {
-    const before = match.input[match.index - 1];
-    if (before === ".") {
-      response.ignoreMatch();
-    }
   }
 
   /** skip vs abort vs ignore
@@ -1078,12 +1091,28 @@ function compileLanguage(language) {
   function compileMode(mode, parent) {
     const cmode = /** @type CompiledMode */ (mode);
     if (mode.compiled) return cmode;
-    mode.compiled = true;
+
+    [
+      // do this early so compiler extensions generally don't have to worry about
+      // the distinction between match/begin
+      compileMatch
+    ].forEach(ext => ext(mode, parent));
+
+    language.compilerExtensions.forEach(ext => ext(mode, parent));
 
     // __beforeBegin is considered private API, internal use only
     mode.__beforeBegin = null;
 
-    mode.keywords = mode.keywords || mode.beginKeywords;
+    [
+      beginKeywords,
+      // do this later so compiler extensions that come earlier have access to the
+      // raw array if they wanted to perhaps manipulate it, etc.
+      compileIllegal,
+      // default to 1 relevance if not specified
+      compileRelevance
+    ].forEach(ext => ext(mode, parent));
+
+    mode.compiled = true;
 
     let keywordPattern = null;
     if (typeof mode.keywords === "object") {
@@ -1102,31 +1131,21 @@ function compileLanguage(language) {
 
     // `mode.lexemes` was the old standard before we added and now recommend
     // using `keywords.$pattern` to pass the keyword pattern
-    cmode.keywordPatternRe = langRe(mode.lexemes || keywordPattern || /\w+/, true);
+    keywordPattern = keywordPattern || mode.lexemes || /\w+/;
+    cmode.keywordPatternRe = langRe(keywordPattern, true);
 
     if (parent) {
-      if (mode.beginKeywords) {
-        // for languages with keywords that include non-word characters checking for
-        // a word boundary is not sufficient, so instead we check for a word boundary
-        // or whitespace - this does no harm in any case since our keyword engine
-        // doesn't allow spaces in keywords anyways and we still check for the boundary
-        // first
-        mode.begin = '\\b(' + mode.beginKeywords.split(' ').join('|') + ')(?!\\.)(?=\\b|\\s)';
-        mode.__beforeBegin = skipIfhasPrecedingDot;
-      }
       if (!mode.begin) mode.begin = /\B|\b/;
       cmode.beginRe = langRe(mode.begin);
       if (mode.endSameAsBegin) mode.end = mode.begin;
       if (!mode.end && !mode.endsWithParent) mode.end = /\B|\b/;
       if (mode.end) cmode.endRe = langRe(mode.end);
-      cmode.terminator_end = source(mode.end) || '';
-      if (mode.endsWithParent && parent.terminator_end) {
-        cmode.terminator_end += (mode.end ? '|' : '') + parent.terminator_end;
+      cmode.terminatorEnd = source(mode.end) || '';
+      if (mode.endsWithParent && parent.terminatorEnd) {
+        cmode.terminatorEnd += (mode.end ? '|' : '') + parent.terminatorEnd;
       }
     }
-    if (mode.illegal) cmode.illegalRe = langRe(mode.illegal);
-    // eslint-disable-next-line no-undefined
-    if (mode.relevance === undefined) mode.relevance = 1;
+    if (mode.illegal) cmode.illegalRe = langRe(/** @type {RegExp | string} */ (mode.illegal));
     if (!mode.contains) mode.contains = [];
 
     mode.contains = [].concat(...mode.contains.map(function(c) {
@@ -1141,6 +1160,8 @@ function compileLanguage(language) {
     cmode.matcher = buildModeRegex(cmode);
     return cmode;
   }
+
+  if (!language.compilerExtensions) language.compilerExtensions = [];
 
   // self is not valid at the top-level
   if (language.contains && language.contains.includes('self')) {
@@ -1181,8 +1202,8 @@ function dependencyOnParent(mode) {
  * @returns {Mode | Mode[]}
  * */
 function expandOrCloneMode(mode) {
-  if (mode.variants && !mode.cached_variants) {
-    mode.cached_variants = mode.variants.map(function(variant) {
+  if (mode.variants && !mode.cachedVariants) {
+    mode.cachedVariants = mode.variants.map(function(variant) {
       return inherit(mode, { variants: null }, variant);
     });
   }
@@ -1190,8 +1211,8 @@ function expandOrCloneMode(mode) {
   // EXPAND
   // if we have variants then essentially "replace" the mode with the variants
   // this happens in compileMode, where this function is called from
-  if (mode.cached_variants) {
-    return mode.cached_variants;
+  if (mode.cachedVariants) {
+    return mode.cachedVariants;
   }
 
   // CLONE
@@ -1210,77 +1231,7 @@ function expandOrCloneMode(mode) {
   return mode;
 }
 
-/***********************************************
-  Keywords
-***********************************************/
-
-/**
- * Given raw keywords from a language definition, compile them.
- *
- * @param {string | Record<string,string>} rawKeywords
- * @param {boolean} caseInsensitive
- */
-function compileKeywords(rawKeywords, caseInsensitive) {
-  /** @type KeywordDict */
-  const compiledKeywords = {};
-
-  if (typeof rawKeywords === 'string') { // string
-    splitAndCompile('keyword', rawKeywords);
-  } else {
-    Object.keys(rawKeywords).forEach(function(className) {
-      splitAndCompile(className, rawKeywords[className]);
-    });
-  }
-  return compiledKeywords;
-
-  // ---
-
-  /**
-   * Compiles an individual list of keywords
-   *
-   * Ex: "for if when while|5"
-   *
-   * @param {string} className
-   * @param {string} keywordList
-   */
-  function splitAndCompile(className, keywordList) {
-    if (caseInsensitive) {
-      keywordList = keywordList.toLowerCase();
-    }
-    keywordList.split(' ').forEach(function(keyword) {
-      const pair = keyword.split('|');
-      compiledKeywords[pair[0]] = [className, scoreForKeyword(pair[0], pair[1])];
-    });
-  }
-}
-
-/**
- * Returns the proper score for a given keyword
- *
- * Also takes into account comment keywords, which will be scored 0 UNLESS
- * another score has been manually assigned.
- * @param {string} keyword
- * @param {string} [providedScore]
- */
-function scoreForKeyword(keyword, providedScore) {
-  // manual scores always win over common keywords
-  // so you can force a score of 1 if you really insist
-  if (providedScore) {
-    return Number(providedScore);
-  }
-
-  return commonKeyword(keyword) ? 0 : 1;
-}
-
-/**
- * Determines if a given keyword is common or not
- *
- * @param {string} keyword */
-function commonKeyword(keyword) {
-  return COMMON_KEYWORDS.includes(keyword.toLowerCase());
-}
-
-var version = "10.4.1";
+var version = "10.6.0";
 
 // @ts-nocheck
 
@@ -1300,7 +1251,7 @@ function BuildVuePlugin(hljs) {
     computed: {
       className() {
         if (this.unknownLanguage) return "";
-  
+
         return "hljs " + this.detectedLanguage;
       },
       highlighted() {
@@ -1310,8 +1261,8 @@ function BuildVuePlugin(hljs) {
           this.unknownLanguage = true;
           return escapeHTML(this.code);
         }
-  
-        let result;
+
+        let result = {};
         if (this.autoDetect) {
           result = hljs.highlightAuto(this.code);
           this.detectedLanguage = result.language;
@@ -1334,12 +1285,13 @@ function BuildVuePlugin(hljs) {
       return createElement("pre", {}, [
         createElement("code", {
           class: this.className,
-          domProps: { innerHTML: this.highlighted }})
+          domProps: { innerHTML: this.highlighted }
+        })
       ]);
     }
     // template: `<pre><code :class="className" v-html="highlighted"></code></pre>`
   };
-  
+
   const VuePlugin = {
     install(Vue) {
       Vue.component('highlightjs', Component);
@@ -1349,6 +1301,191 @@ function BuildVuePlugin(hljs) {
   return { Component, VuePlugin };
 }
 
+/* plugin itself */
+
+/** @type {HLJSPlugin} */
+const mergeHTMLPlugin = {
+  "after:highlightBlock": ({ block, result, text }) => {
+    const originalStream = nodeStream(block);
+    if (!originalStream.length) return;
+
+    const resultNode = document.createElement('div');
+    resultNode.innerHTML = result.value;
+    result.value = mergeStreams(originalStream, nodeStream(resultNode), text);
+  }
+};
+
+/* Stream merging support functions */
+
+/**
+ * @typedef Event
+ * @property {'start'|'stop'} event
+ * @property {number} offset
+ * @property {Node} node
+ */
+
+/**
+ * @param {Node} node
+ */
+function tag(node) {
+  return node.nodeName.toLowerCase();
+}
+
+/**
+ * @param {Node} node
+ */
+function nodeStream(node) {
+  /** @type Event[] */
+  const result = [];
+  (function _nodeStream(node, offset) {
+    for (let child = node.firstChild; child; child = child.nextSibling) {
+      if (child.nodeType === 3) {
+        offset += child.nodeValue.length;
+      } else if (child.nodeType === 1) {
+        result.push({
+          event: 'start',
+          offset: offset,
+          node: child
+        });
+        offset = _nodeStream(child, offset);
+        // Prevent void elements from having an end tag that would actually
+        // double them in the output. There are more void elements in HTML
+        // but we list only those realistically expected in code display.
+        if (!tag(child).match(/br|hr|img|input/)) {
+          result.push({
+            event: 'stop',
+            offset: offset,
+            node: child
+          });
+        }
+      }
+    }
+    return offset;
+  })(node, 0);
+  return result;
+}
+
+/**
+ * @param {any} original - the original stream
+ * @param {any} highlighted - stream of the highlighted source
+ * @param {string} value - the original source itself
+ */
+function mergeStreams(original, highlighted, value) {
+  let processed = 0;
+  let result = '';
+  const nodeStack = [];
+
+  function selectStream() {
+    if (!original.length || !highlighted.length) {
+      return original.length ? original : highlighted;
+    }
+    if (original[0].offset !== highlighted[0].offset) {
+      return (original[0].offset < highlighted[0].offset) ? original : highlighted;
+    }
+
+    /*
+    To avoid starting the stream just before it should stop the order is
+    ensured that original always starts first and closes last:
+
+    if (event1 == 'start' && event2 == 'start')
+      return original;
+    if (event1 == 'start' && event2 == 'stop')
+      return highlighted;
+    if (event1 == 'stop' && event2 == 'start')
+      return original;
+    if (event1 == 'stop' && event2 == 'stop')
+      return highlighted;
+
+    ... which is collapsed to:
+    */
+    return highlighted[0].event === 'start' ? original : highlighted;
+  }
+
+  /**
+   * @param {Node} node
+   */
+  function open(node) {
+    /** @param {Attr} attr */
+    function attributeString(attr) {
+      return ' ' + attr.nodeName + '="' + escapeHTML(attr.value) + '"';
+    }
+    // @ts-ignore
+    result += '<' + tag(node) + [].map.call(node.attributes, attributeString).join('') + '>';
+  }
+
+  /**
+   * @param {Node} node
+   */
+  function close(node) {
+    result += '</' + tag(node) + '>';
+  }
+
+  /**
+   * @param {Event} event
+   */
+  function render(event) {
+    (event.event === 'start' ? open : close)(event.node);
+  }
+
+  while (original.length || highlighted.length) {
+    let stream = selectStream();
+    result += escapeHTML(value.substring(processed, stream[0].offset));
+    processed = stream[0].offset;
+    if (stream === original) {
+      /*
+      On any opening or closing tag of the original markup we first close
+      the entire highlighted node stack, then render the original tag along
+      with all the following original tags at the same offset and then
+      reopen all the tags on the highlighted stack.
+      */
+      nodeStack.reverse().forEach(close);
+      do {
+        render(stream.splice(0, 1)[0]);
+        stream = selectStream();
+      } while (stream === original && stream.length && stream[0].offset === processed);
+      nodeStack.reverse().forEach(open);
+    } else {
+      if (stream[0].event === 'start') {
+        nodeStack.push(stream[0].node);
+      } else {
+        nodeStack.pop();
+      }
+      render(stream.splice(0, 1)[0]);
+    }
+  }
+  return result + escapeHTML(value.substr(processed));
+}
+
+/*
+
+For the reasoning behind this please see:
+https://github.com/highlightjs/highlight.js/issues/2880#issuecomment-747275419
+
+*/
+
+/**
+ * @param {string} message
+ */
+const error = (message) => {
+  console.error(message);
+};
+
+/**
+ * @param {string} message
+ * @param {any} args
+ */
+const warn = (message, ...args) => {
+  console.log(`WARN: ${message}`, ...args);
+};
+
+/**
+ * @param {string} version
+ * @param {string} message
+ */
+const deprecated = (version, message) => {
+  console.log(`Deprecated as of ${version}. ${message}`);
+};
+
 /*
 Syntax highlighting with language autodetection.
 https://highlightjs.org/
@@ -1356,8 +1493,6 @@ https://highlightjs.org/
 
 const escape$1 = escapeHTML;
 const inherit$1 = inherit;
-
-const { nodeStream: nodeStream$1, mergeStreams: mergeStreams$1 } = utils;
 const NO_MATCH = Symbol("nomatch");
 
 /**
@@ -1365,10 +1500,6 @@ const NO_MATCH = Symbol("nomatch");
  * @returns {HLJSApi}
  */
 const HLJS = function(hljs) {
-  // Convenience variables for build-in objects
-  /** @type {unknown[]} */
-  const ArrayProto = [];
-
   // Global internal variables used within the highlight.js library.
   /** @type {Record<string, Language>} */
   const languages = Object.create(null);
@@ -1423,8 +1554,8 @@ const HLJS = function(hljs) {
     if (match) {
       const language = getLanguage(match[1]);
       if (!language) {
-        console.warn(LANGUAGE_NOT_FOUND.replace("{}", match[1]));
-        console.warn("Falling back to no-highlight mode for this block.", block);
+        warn(LANGUAGE_NOT_FOUND.replace("{}", match[1]));
+        warn("Falling back to no-highlight mode for this block.", block);
       }
       return language ? match[1] : 'no-highlight';
     }
@@ -1451,7 +1582,7 @@ const HLJS = function(hljs) {
    * @property {boolean} illegal - indicates whether any illegal matches were found
   */
   function highlight(languageName, code, ignoreIllegals, continuation) {
-    /** @type {{ code: string, language: string, result?: any }} */
+    /** @type {BeforeHighlightContext} */
     const context = {
       code,
       language: languageName
@@ -1462,9 +1593,9 @@ const HLJS = function(hljs) {
 
     // a before plugin can usurp the result completely by providing it's own
     // in which case we don't even need to call highlight
-    const result = context.result ?
-      context.result :
-      _highlight(context.language, context.code, ignoreIllegals, continuation);
+    const result = context.result
+      ? context.result
+      : _highlight(context.language, context.code, ignoreIllegals, continuation);
 
     result.code = context.code;
     // the plugin can change anything in result to suite it
@@ -1805,11 +1936,11 @@ const HLJS = function(hljs) {
 
     const language = getLanguage(languageName);
     if (!language) {
-      console.error(LANGUAGE_NOT_FOUND.replace("{}", languageName));
+      error(LANGUAGE_NOT_FOUND.replace("{}", languageName));
       throw new Error('Unknown language: "' + languageName + '"');
     }
 
-    const md = compileLanguage(language);
+    const md = compileLanguage(language, { plugins });
     let result = '';
     /** @type {CompiledMode} */
     let top = continuation || md;
@@ -1852,7 +1983,9 @@ const HLJS = function(hljs) {
       result = emitter.toHTML();
 
       return {
-        relevance: relevance,
+        // avoid possible breakage with v10 clients expecting
+        // this to always be an integer
+        relevance: Math.floor(relevance),
         value: result,
         language: languageName,
         illegal: false,
@@ -1988,24 +2121,42 @@ const HLJS = function(hljs) {
   /**
    * Builds new class name for block given the language name
    *
-   * @param {string} prevClassName
+   * @param {HTMLElement} element
    * @param {string} [currentLang]
    * @param {string} [resultLang]
    */
-  function buildClassName(prevClassName, currentLang, resultLang) {
+  function updateClassName(element, currentLang, resultLang) {
     const language = currentLang ? aliases[currentLang] : resultLang;
-    const result = [prevClassName.trim()];
 
-    if (!prevClassName.match(/\bhljs\b/)) {
-      result.push('hljs');
-    }
-
-    if (!prevClassName.includes(language)) {
-      result.push(language);
-    }
-
-    return result.join(' ').trim();
+    element.classList.add("hljs");
+    if (language) element.classList.add(language);
   }
+
+  /** @type {HLJSPlugin} */
+  const brPlugin = {
+    "before:highlightBlock": ({ block }) => {
+      if (options.useBR) {
+        block.innerHTML = block.innerHTML.replace(/\n/g, '').replace(/<br[ /]*>/g, '\n');
+      }
+    },
+    "after:highlightBlock": ({ result }) => {
+      if (options.useBR) {
+        result.value = result.value.replace(/\n/g, "<br>");
+      }
+    }
+  };
+
+  const TAB_REPLACE_RE = /^(<[^>]+>|\t)+/gm;
+  /** @type {HLJSPlugin} */
+  const tabReplacePlugin = {
+    "after:highlightBlock": ({ result }) => {
+      if (options.tabReplace) {
+        result.value = result.value.replace(TAB_REPLACE_RE, (m) =>
+          m.replace(/\t/g, options.tabReplace)
+        );
+      }
+    }
+  };
 
   /**
    * Applies highlighting to a DOM node containing code. Accepts a DOM node and
@@ -2023,27 +2174,14 @@ const HLJS = function(hljs) {
     fire("before:highlightBlock",
       { block: element, language: language });
 
-    if (options.useBR) {
-      node = document.createElement('div');
-      node.innerHTML = element.innerHTML.replace(/\n/g, '').replace(/<br[ /]*>/g, '\n');
-    } else {
-      node = element;
-    }
+    node = element;
     const text = node.textContent;
     const result = language ? highlight(language, text, true) : highlightAuto(text);
 
-    const originalStream = nodeStream$1(node);
-    if (originalStream.length) {
-      const resultNode = document.createElement('div');
-      resultNode.innerHTML = result.value;
-      result.value = mergeStreams$1(originalStream, nodeStream$1(resultNode), text);
-    }
-    result.value = fixMarkup(result.value);
-
-    fire("after:highlightBlock", { block: element, result: result });
+    fire("after:highlightBlock", { block: element, result, text });
 
     element.innerHTML = result.value;
-    element.className = buildClassName(element.className, language, result.language);
+    updateClassName(element, language, result.language);
     element.result = {
       language: result.language,
       // TODO: remove with version 11.0
@@ -2067,8 +2205,8 @@ const HLJS = function(hljs) {
    */
   function configure(userOptions) {
     if (userOptions.useBR) {
-      console.warn("'useBR' option is deprecated and will be removed entirely in v11.0");
-      console.warn("Please see https://github.com/highlightjs/highlight.js/issues/2559");
+      deprecated("10.3.0", "'useBR' will be removed entirely in v11.0");
+      deprecated("10.3.0", "Please see https://github.com/highlightjs/highlight.js/issues/2559");
     }
     options = inherit$1(options, userOptions);
   }
@@ -2078,18 +2216,47 @@ const HLJS = function(hljs) {
    *
    * @type {Function & {called?: boolean}}
    */
+  // TODO: remove v12, deprecated
   const initHighlighting = () => {
     if (initHighlighting.called) return;
     initHighlighting.called = true;
 
+    deprecated("10.6.0", "initHighlighting() is deprecated.  Use highlightAll() instead.");
+
     const blocks = document.querySelectorAll('pre code');
-    ArrayProto.forEach.call(blocks, highlightBlock);
+    blocks.forEach(highlightBlock);
   };
 
   // Higlights all when DOMContentLoaded fires
+  // TODO: remove v12, deprecated
   function initHighlightingOnLoad() {
-    // @ts-ignore
-    window.addEventListener('DOMContentLoaded', initHighlighting, false);
+    deprecated("10.6.0", "initHighlightingOnLoad() is deprecated.  Use highlightAll() instead.");
+    wantsHighlight = true;
+  }
+
+  let wantsHighlight = false;
+  let domLoaded = false;
+
+  /**
+   * auto-highlights all pre>code elements on the page
+   */
+  function highlightAll() {
+    // if we are called too early in the loading process
+    if (!domLoaded) { wantsHighlight = true; return; }
+
+    const blocks = document.querySelectorAll('pre code');
+    blocks.forEach(highlightBlock);
+  }
+
+  function boot() {
+    domLoaded = true;
+    // if a highlight was requested before DOM was loaded, do now
+    if (wantsHighlight) highlightAll();
+  }
+
+  // make sure we are in the browser environment
+  if (typeof window !== 'undefined' && window.addEventListener) {
+    window.addEventListener('DOMContentLoaded', boot, false);
   }
 
   /**
@@ -2102,10 +2269,10 @@ const HLJS = function(hljs) {
     let lang = null;
     try {
       lang = languageDefinition(hljs);
-    } catch (error) {
-      console.error("Language definition for '{}' could not be registered.".replace("{}", languageName));
+    } catch (error$1) {
+      error("Language definition for '{}' could not be registered.".replace("{}", languageName));
       // hard or soft error
-      if (!SAFE_MODE) { throw error; } else { console.error(error); }
+      if (!SAFE_MODE) { throw error$1; } else { error(error$1); }
       // languages that have serious errors are replaced with essentially a
       // "plaintext" stand-in so that the code blocks will still get normal
       // css classes applied to them - and one bad language won't break the
@@ -2139,8 +2306,8 @@ const HLJS = function(hljs) {
     @returns {Language | never}
   */
   function requireLanguage(name) {
-    console.warn("requireLanguage is deprecated and will be removed entirely in the future.");
-    console.warn("Please see https://github.com/highlightjs/highlight.js/pull/2844");
+    deprecated("10.4.0", "requireLanguage will be removed entirely in v11.");
+    deprecated("10.4.0", "Please see https://github.com/highlightjs/highlight.js/pull/2844");
 
     const lang = getLanguage(name);
     if (lang) { return lang; }
@@ -2207,8 +2374,8 @@ const HLJS = function(hljs) {
   @returns {string}
   */
   function deprecateFixMarkup(arg) {
-    console.warn("fixMarkup is deprecated and will be removed entirely in v11.0");
-    console.warn("Please see https://github.com/highlightjs/highlight.js/issues/2534");
+    deprecated("10.2.0", "fixMarkup will be removed entirely in v11.0");
+    deprecated("10.2.0", "Please see https://github.com/highlightjs/highlight.js/issues/2534");
 
     return fixMarkup(arg);
   }
@@ -2217,6 +2384,7 @@ const HLJS = function(hljs) {
   Object.assign(hljs, {
     highlight,
     highlightAuto,
+    highlightAll,
     fixMarkup: deprecateFixMarkup,
     highlightBlock,
     configure,
@@ -2249,6 +2417,10 @@ const HLJS = function(hljs) {
   // merge all the modes/regexs into our main object
   Object.assign(hljs, MODES);
 
+  // built-in plugins, likely to be moved out of core in the future
+  hljs.addPlugin(brPlugin); // slated to be removed in v11
+  hljs.addPlugin(mergeHTMLPlugin);
+  hljs.addPlugin(tabReplacePlugin);
   return hljs;
 };
 
@@ -2485,9 +2657,9 @@ function javascript(hljs) {
   };
   const KEYWORDS$1 = {
     $pattern: IDENT_RE$1,
-    keyword: KEYWORDS.join(" "),
-    literal: LITERALS.join(" "),
-    built_in: BUILT_INS.join(" ")
+    keyword: KEYWORDS,
+    literal: LITERALS,
+    built_in: BUILT_INS
   };
 
   // https://tc39.es/ecma262/#sec-literals-numeric-literals
@@ -2562,7 +2734,7 @@ function javascript(hljs) {
     ]
   };
   const JSDOC_COMMENT = hljs.COMMENT(
-    '/\\*\\*',
+    /\/\*\*(?!\/)/,
     '\\*/',
     {
       relevance: 0,
@@ -2907,7 +3079,7 @@ function concat$2(...args) {
  * @param {(RegExp | string)[] } args
  * @returns {string}
  */
-function either(...args) {
+function either$1(...args) {
   const joined = '(' + args.map((x) => source$2(x)).join("|") + ")";
   return joined;
 }
@@ -2916,30 +3088,31 @@ function either(...args) {
 Language: HTML, XML
 Website: https://www.w3.org/XML/
 Category: common
+Audit: 2020
 */
 
 /** @type LanguageFn */
 function xml(hljs) {
   // Element names can contain letters, digits, hyphens, underscores, and periods
-  const TAG_NAME_RE = concat$2(/[A-Z_]/, optional(/[A-Z0-9_.-]+:/), /[A-Z0-9_.-]*/);
-  const XML_IDENT_RE = '[A-Za-z0-9\\._:-]+';
+  const TAG_NAME_RE = concat$2(/[A-Z_]/, optional(/[A-Z0-9_.-]*:/), /[A-Z0-9_.-]*/);
+  const XML_IDENT_RE = /[A-Za-z0-9._:-]+/;
   const XML_ENTITIES = {
     className: 'symbol',
-    begin: '&[a-z]+;|&#[0-9]+;|&#x[a-f0-9]+;'
+    begin: /&[a-z]+;|&#[0-9]+;|&#x[a-f0-9]+;/
   };
   const XML_META_KEYWORDS = {
-    begin: '\\s',
+    begin: /\s/,
     contains: [
       {
         className: 'meta-keyword',
-        begin: '#?[a-z_][a-z1-9_-]+',
-        illegal: '\\n'
+        begin: /#?[a-z_][a-z1-9_-]+/,
+        illegal: /\n/
       }
     ]
   };
   const XML_META_PAR_KEYWORDS = hljs.inherit(XML_META_KEYWORDS, {
-    begin: '\\(',
-    end: '\\)'
+    begin: /\(/,
+    end: /\)/
   });
   const APOS_META_STRING_MODE = hljs.inherit(hljs.APOS_STRING_MODE, {
     className: 'meta-string'
@@ -3002,8 +3175,8 @@ function xml(hljs) {
     contains: [
       {
         className: 'meta',
-        begin: '<![a-z]',
-        end: '>',
+        begin: /<![a-z]/,
+        end: />/,
         relevance: 10,
         contains: [
           XML_META_KEYWORDS,
@@ -3011,13 +3184,13 @@ function xml(hljs) {
           APOS_META_STRING_MODE,
           XML_META_PAR_KEYWORDS,
           {
-            begin: '\\[',
-            end: '\\]',
+            begin: /\[/,
+            end: /\]/,
             contains: [
               {
                 className: 'meta',
-                begin: '<![a-z]',
-                end: '>',
+                begin: /<![a-z]/,
+                end: />/,
                 contains: [
                   XML_META_KEYWORDS,
                   XML_META_PAR_KEYWORDS,
@@ -3030,15 +3203,15 @@ function xml(hljs) {
         ]
       },
       hljs.COMMENT(
-        '<!--',
-        '-->',
+        /<!--/,
+        /-->/,
         {
           relevance: 10
         }
       ),
       {
-        begin: '<!\\[CDATA\\[',
-        end: '\\]\\]>',
+        begin: /<!\[CDATA\[/,
+        end: /\]\]>/,
         relevance: 10
       },
       XML_ENTITIES,
@@ -3056,14 +3229,14 @@ function xml(hljs) {
         ending braket. The '$' is needed for the lexeme to be recognized
         by hljs.subMode() that tests lexemes outside the stream.
         */
-        begin: '<style(?=\\s|>)',
-        end: '>',
+        begin: /<style(?=\s|>)/,
+        end: />/,
         keywords: {
           name: 'style'
         },
         contains: [ TAG_INTERNALS ],
         starts: {
-          end: '</style>',
+          end: /<\/style>/,
           returnEnd: true,
           subLanguage: [
             'css',
@@ -3074,8 +3247,8 @@ function xml(hljs) {
       {
         className: 'tag',
         // See the comment in the <style tag about the lookahead pattern
-        begin: '<script(?=\\s|>)',
-        end: '>',
+        begin: /<script(?=\s|>)/,
+        end: />/,
         keywords: {
           name: 'script'
         },
@@ -3105,7 +3278,7 @@ function xml(hljs) {
             // <tag/>
             // <tag>
             // <tag ...
-            either(/\/>/, />/, /\s/)
+            either$1(/\/>/, />/, /\s/)
           ))
         ),
         end: /\/?>/,
@@ -3465,28 +3638,6 @@ class StateRecorder {
 
 const stateRecorder = new StateRecorder();
 
-function litStyle(myStyles) {
-
-    return superclass => class extends superclass {
-
-        static getStyles() {
-
-            const styles = super.getStyles();
-
-            if (!styles) {
-                return myStyles;
-            } else if (Array.isArray(styles)) {
-                return [myStyles, ...styles];
-            } else {
-                return [myStyles, styles];
-            }
-
-        }
-
-    }
-
-}
-
 const LitDocsStyle = litStyle(css`
 
     :host {
@@ -3652,9 +3803,9 @@ class LitDocsUiState extends LitState {
     constructor() {
         super();
         this.pages = stateVar();
-        this.path = stateVar();
         this.page = stateVar();
         this.showMenu = stateVar();
+        this.useHash = stateVar(true);
     }
 
     /*static get stateVars() {
@@ -3666,33 +3817,60 @@ class LitDocsUiState extends LitState {
         }
     }*/
 
-    setPath(path) {
-        if (path[0] === '/') path = path.substr(1);
-        this.path = path || '/';
-        this._initPageByPath();
+    initPageByPath(path) {
+
+        if (!path || path === '/' || path === '' || path === '#') {
+            this.page = this.pages[0];
+            return;
+        }
+
+        path = path.slice(); // make a copy
+
+        if (path[0] === '/') {
+            path = path.substr(1);
+        }
+
+        if (this.useHash && path.split('#').length > 1) {
+            path = path.split('#')[1];
+        }
+
+        this._setPageByPath(path, this.pages);
+
+        if (!this.page) {
+            this.page = this.pages[0];
+        }
+
     }
 
     navToPath(path, addToHistory = true) {
 
-        if (!path) {
-            path = '/';
+        path = path.slice(); // make a copy
+
+        if (this.useHash) {
+            path = path.split('#')[1] || '';
+        } else {
+
+            if (!path) {
+                path = '/';
+            }
+
+            if (
+                path.substr(0, 7) === 'http://'
+                || path.substr(0, 8) === 'https://'
+            ) {
+                path = path.split('/').slice(3).join('/');
+            }
+
         }
 
-        if (
-            path.substr(0, 7) === 'http://'
-            || path.substr(0, 8) === 'https://'
-        ) {
-            path = path.split('/').slice(3).join('/');
-        }
-
-        if (path === this.path) {
-            return;
-        }
-
-        this.setPath(path);
+        this.initPageByPath(path);
 
         if (addToHistory) {
-            history.pushState({}, this.page.title, this.path);
+            history.pushState(
+                {},
+                this.page.title,
+                (this.useHash ? window.location.pathname + '#' : '') + path
+            );
         }
 
         this.showMenu = false;
@@ -3724,25 +3902,12 @@ class LitDocsUiState extends LitState {
 
     }
 
-    _initPageByPath() {
-
-        let path = this.path;
-
-        if (path === '/' || path === '') {
-            this.page = this.pages[0];
-            return;
+    handlePopState() {
+        if (this.useHash) {
+            this.navToPath(window.location.hash, false);
+        } else {
+            this.navToPath(window.location.pathname, false);
         }
-
-        if (path[0] === '/') {
-            path = path.substr(1);
-        }
-
-        this._setPageByPath(path, this.pages);
-
-        if (!this.page) {
-            this.page = this.pages[0];
-        }
-
     }
 
     _setPageByPath(path, pages) {
@@ -3782,13 +3947,15 @@ class LitDocsUI extends observeState(LitDocsStyle(LitElement)) {
     static get properties() {
         return {
             docsTitle: {type: String},
-            pages: {type: Array}
+            pages: {type: Array},
+            useHash: {type: Boolean}
         }
     }
 
     constructor() {
         super();
         this.docsTitle = '';
+        this.useHash = true;
         this.pages = [];
     }
 
@@ -3805,8 +3972,9 @@ class LitDocsUI extends observeState(LitDocsStyle(LitElement)) {
     }
 
     _initState() {
+        litDocsUiState.useHash = this.useHash;
         litDocsUiState.pages = this.pages;
-        litDocsUiState.setPath(window.location.pathname);
+        litDocsUiState.initPageByPath(window.location.pathname + window.location.hash);
     }
 
     _fixMenuWidth() {
@@ -3829,7 +3997,7 @@ class LitDocsUI extends observeState(LitDocsStyle(LitElement)) {
 
     _initPopStateListener() {
         window.addEventListener('popstate', event => {
-            litDocsUiState.navToPath(window.location.pathname, false);
+            litDocsUiState.handlePopState();
         });
     }
 
@@ -3891,11 +4059,21 @@ class LitDocsUI extends observeState(LitDocsStyle(LitElement)) {
 
                 if (page.template) {
 
+                    const href = (() => {
+
+                        if (litDocsUiState.useHash) {
+                            return window.location.pathname + '#' + path;
+                        }
+
+                        return path;
+
+                    })();
+
                     return html`
                         <a
                             class="menuItem menuItemLink"
                             nav-level=${level}
-                            href=${path}
+                            href=${href}
                             @click=${event => litDocsUiState.handlePageLinkClick(event)}
                             ?active=${page === litDocsUiState.page}
                         >
@@ -3933,23 +4111,6 @@ class LitDocsUI extends observeState(LitDocsStyle(LitElement)) {
             `;
 
         });
-
-    }
-
-    handleTitleClick(event) {
-        this.handleMenuItemClick(event, this.pages[0], '/');
-    }
-
-    handleMenuItemClick(event, page, path) {
-
-        if (event.ctrlKey || event.shiftKey) {
-            // Ctrl/shift click opens a `<a>` link in new tab/window, so when
-            // one of these keys are pressed, don't override normal behavior.
-            return
-        }
-
-        event.preventDefault();
-        litDocsUiState.navToPath(path);
 
     }
 
@@ -4174,9 +4335,19 @@ class LitDocsLink extends LitDocsStyle(LitElement) {
     render() {
         // Don't leave no spaces in the template, because the host is an inline
         // element.
-        return html`<a href=${this.href}
+        return html`<a href=${this._href}
             @click=${event => litDocsUiState.handlePageLinkClick(event)}
         ><slot></slot></a>`;
+    }
+
+    get _href() {
+
+        if (litDocsUiState.useHash) {
+            return '#' + this.href;
+        }
+
+        return this.href;
+
     }
 
     static get styles() {
@@ -4323,7 +4494,7 @@ const LitDocsAnchors = superclass => class extends litDocsAnchorsStyles(supercla
 
     _addHashChangeListener() {
         this.hashChangeCallback = event => {
-            goToAnchor(event.newURL.split('#')[1]);
+            goToAnchor(event.newURL.split('#').slice(-1)[0]);
             this._renderAnchors();
         };
         window.addEventListener('hashchange', this.hashChangeCallback);
@@ -4334,7 +4505,9 @@ const LitDocsAnchors = superclass => class extends litDocsAnchorsStyles(supercla
     }
 
     _loadInitialAnchor() {
-        goToAnchor(window.location.hash.substr(1));
+        const hashes = window.location.hash.split('#');
+        const lastHash = hashes.pop();
+        goToAnchor(lastHash);
     }
 
     _addAnchors() {
@@ -4394,7 +4567,7 @@ const LitDocsAnchors = superclass => class extends litDocsAnchorsStyles(supercla
             <span>${anchor.elementText}</span>
             <a
                 class="headingAnchor"
-                href=${window.location.pathname + '#' + anchor.anchorName}
+                href=${window.location.pathname + this._baseHash + '#' + anchor.anchorName}
                 ?active=${active}
                 @click=${() => goToAnchor(anchor.anchorName)}
             >
@@ -4404,6 +4577,23 @@ const LitDocsAnchors = superclass => class extends litDocsAnchorsStyles(supercla
 
         render(template, anchor.element);
         anchor.element.id = anchor.anchorName;
+
+    }
+
+    get _baseHash() {
+
+        if (!litDocsUiState.useHash || window.location.hash[0] !== '#') {
+            return '';
+        }
+
+        const hashValue = window.location.hash.substr(1);
+        const hashes = hashValue.split('#');
+
+        if (hashes.length > 1) {
+            return '#' + hashes.slice(0, -1).join('#');
+        } else {
+            return '#' + hashes[0];
+        }
 
     }
 

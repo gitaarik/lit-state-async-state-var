@@ -1,4 +1,4 @@
-import './common/lit-element-6b065c14.js';
+import './lit-element-6b065c14.js';
 
 function litStyle(myStyles) {
 
@@ -20,8 +20,6 @@ function litStyle(myStyles) {
 
     }
 
-    
-
 }
 
-export { litStyle };
+export { litStyle as l };

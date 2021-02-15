@@ -37,7 +37,7 @@ class MyState extends LitState {
 }
 ```
 
-See the [demo app](https://gitaarik.github.io/lit-state-async-state-var/demo-app/build/)
+See the [docs](https://gitaarik.github.io/lit-state-async-state-var/docs/build/)
 for more examples.
 
 
@@ -114,7 +114,7 @@ class MyElement extends observeState(LitElement) {
 
 You can also use `myState.myData.reload()` to re-execute the promise.
 
-Check the [demo app](https://gitaarik.github.io/lit-state-async-state-var/demo-app/build/)
+Check the [docs](https://gitaarik.github.io/lit-state-async-state-var/docs/build/)
 to see how `asyncStateVar` works.
 
 
@@ -185,7 +185,7 @@ the `reject()` callback will be accesible with the `getErrorSet()` method.
 `getErrorGet()` for the **get** promise, and `getErrorSet()` for the **set**
 promise.
 
-Check the [demo app](https://gitaarik.github.io/lit-state-async-state-var/demo-app/build/#update)
+Check the [docs](https://gitaarik.github.io/lit-state-async-state-var/docs/build/#update)
 to see how `asyncStateVar` with updates works.
 
 
@@ -223,7 +223,7 @@ myState.myData.reset();
 myState.myData.restore();
 ```
 
-Check the [demo app](https://gitaarik.github.io/lit-state-async-state-var/demo-app/build/#update-delayed-push)
+Check the [docs](https://gitaarik.github.io/lit-state-async-state-var/docs/build/#update-delayed-push)
 to see how delayed updates works.
 
 
