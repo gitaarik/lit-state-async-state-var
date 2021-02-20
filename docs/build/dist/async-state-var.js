@@ -21,6 +21,7 @@ class AsyncStateVarHandler extends StateVar {
   }
 
   _init() {
+    this.value = this._hasOption('initialValue') ? this._getOption('initialValue') : null;
     this._initiatedGet = false;
     this._pendingGet = false;
     this._pendingSet = false;
@@ -31,7 +32,6 @@ class AsyncStateVarHandler extends StateVar {
     this._rejectedSet = false;
     this._errorGet = null;
     this._errorSet = null;
-    this._value = this._hasOption('initialValue') ? this._getOption('initialValue') : null;
     this._hasChange = false;
     this._newValue = null;
   }
@@ -112,7 +112,7 @@ class AsyncStateVarHandler extends StateVar {
       this._errorGet = null;
       this._pendingChange = false;
       this._hasChange = false;
-      this._value = value;
+      this.value = value;
     }).catch(error => {
       this._rejectedGet = true;
       this._errorGet = error;
@@ -127,7 +127,7 @@ class AsyncStateVarHandler extends StateVar {
   _pushValue(value) {
     this._getOption('set')(value).then(value => {
       this._fulfilledSet = true;
-      this._value = value;
+      this.value = value;
       this._pendingChange = false;
       this._hasChange = false;
     }).catch(error => {
@@ -209,7 +209,7 @@ class AsyncStateVarHandler extends StateVar {
   getValue() {
     this.recordRead();
     if (this._pendingChange) return this._newValue;
-    return this._value;
+    return this.value;
   }
 
   hasChange() {
