@@ -3,18 +3,22 @@ import { StateVar, stateVar } from 'lit-element-state';
 
 class AsyncStateVarHandler extends StateVar {
 
-    // These methods are proxied to the `stateObject`. They are public API
-    // functions for the developer.
-    proxyMethods = [
-        'valueOf', 'getValue', 'isPending', 'isPendingGet', 'isPendingSet',
-        'isPendingChange', 'isRejected', 'isRejectedGet', 'isRejectedSet',
-        'getError', 'getErrorGet', 'getErrorSet', 'isFulfilled', 'isFulfilledGet',
-        'isFulfilledSet', 'hasChange', 'reset', 'restore', 'push', 'reload'
-    ];
-
     constructor(args) {
+
         super(args);
+
+        // These methods are proxied to the `stateObject`. They are public API
+        // functions for the developer.
+        this.proxyMethods = [
+            'valueOf', 'getValue', 'isPending', 'isPendingGet', 'isPendingSet',
+            'isPendingChange', 'isRejected', 'isRejectedGet', 'isRejectedSet',
+            'getError', 'getErrorGet', 'getErrorSet', 'isFulfilled',
+            'isFulfilledGet', 'isFulfilledSet', 'hasChange', 'reset',
+            'restore', 'push', 'reload'
+        ];
+
         this._init();
+
     }
 
     [Symbol.toPrimitive](hint) {

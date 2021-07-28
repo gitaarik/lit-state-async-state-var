@@ -1,6 +1,6 @@
 {
   "name": "lit-state-async-state-var",
-  "version": "0.3.2",
+  "version": "0.3.3",
   "description": "asyncStateVar() for LitElement for easy handling of async data",
   "main": "async-state-var.js",
   "files": [
