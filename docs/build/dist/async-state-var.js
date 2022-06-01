@@ -1,22 +1,16 @@
-let _Symbol$toPrimitive;
-
-function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
-
 import { StateVar, stateVar } from '../web_modules/lit-element-state.js';
-_Symbol$toPrimitive = Symbol.toPrimitive;
 
 class AsyncStateVarHandler extends StateVar {
-  // These methods are proxied to the `stateObject`. They are public API
-  // functions for the developer.
   constructor(args) {
-    super(args);
+    super(args); // These methods are proxied to the `stateObject`. They are public API
+    // functions for the developer.
 
-    _defineProperty(this, "proxyMethods", ['valueOf', 'getValue', 'isPending', 'isPendingGet', 'isPendingSet', 'isPendingChange', 'isRejected', 'isRejectedGet', 'isRejectedSet', 'getError', 'getErrorGet', 'getErrorSet', 'isFulfilled', 'isFulfilledGet', 'isFulfilledSet', 'hasChange', 'reset', 'restore', 'push', 'reload']);
+    this.proxyMethods = ['valueOf', 'getValue', 'isPending', 'isPendingGet', 'isPendingSet', 'isPendingChange', 'isRejected', 'isRejectedGet', 'isRejectedSet', 'getError', 'getErrorGet', 'getErrorSet', 'isFulfilled', 'isFulfilledGet', 'isFulfilledSet', 'hasChange', 'reset', 'restore', 'push', 'reload'];
 
     this._init();
   }
 
-  [_Symbol$toPrimitive](hint) {
+  [Symbol.toPrimitive](hint) {
     return this.getValue();
   }
 
